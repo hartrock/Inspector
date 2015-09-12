@@ -1,9 +1,10 @@
 # Inspector
 
-For inspecting a running newLISP system.
+For inspecting a newLISP system.
 
-Directly to description of [Demo](https://github.com/hartrock/Inspector#demo).
+Directly to description of [Demo](https://github.com/hartrock/Inspector#demo) leading to a screenshot like the following:
 
+![](https://github.com/hartrock/Inspector/blob/master/screenshot.png)
 
 ## Introduction
 
@@ -39,9 +40,9 @@ until loading
 This demo starts Inspector inside a simple counting loop (counting from 1 to 3). It demonstrates, how a change of a variable can be inspected by using the browser GUI.
 
 1. Run
-    `./inspector.lsp`
+    `./demo.lsp`
   or
-    `newlisp inspector.lsp`
+    `newlisp demo.lsp`
   (the latter may be needed, if newlisp path differs from /usr/local/bin/newlisp).
 
 2. Load
