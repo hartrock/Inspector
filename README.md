@@ -2,7 +2,7 @@
 
 For inspecting a running newLISP system.
 
-Directly to [Demo](https://github.com/hartrock/Inspector#demo).
+Directly to description of [Demo](https://github.com/hartrock/Inspector#demo).
 
 
 ## Introduction
@@ -27,10 +27,10 @@ until loading
 
 ## Some properties of Inspector
 
-- synchronous communication of GUI with Inspector webservice
-- navigation by mouse and keyboard
-- jump directly to symbols by using hashes/anchors (e.g. http://localhost:8080/#MAIN:MAIN refers to MAIN context symbol)
-- context folders structuring symbol space
+- synchronous communication of GUI with Inspector webservice;
+- navigation by mouse and keyboard;
+- jump directly to symbols by using hashes/anchors (e.g. http://localhost:8080/#MAIN:MAIN refers to MAIN context symbol);
+- context folders structuring symbol space;
 - additional folders by double-clicking onto a symbol evaluating to some structure *containing* symbols: like lambdas, macros and lists (this is for getting *related* symbols together into their own folder).
 
 
@@ -39,18 +39,18 @@ until loading
 This demo starts Inspector inside a simple counting loop (counting from 1 to 3). It demonstrates, how a change of a variable can be inspected by using the browser GUI.
 
 1. Run
-  ./inspector.lsp
-or
-  newlisp inspector.lsp
-(may be needed, if newlisp path differs from /usr/local/bin/newlisp).
+    `./inspector.lsp`
+  or
+    `newlisp inspector.lsp`
+  (the latter may be needed, if newlisp path differs from /usr/local/bin/newlisp).
 
 2. Load
-  http://localhost:8080/symbols.html (*)
+  `http://localhost:8080/symbols.html` (*)
 from a browser (firefox works).
 
 There is
-- some info in the terminal output of the newLISP process about possible user actions.
-- some Help at the bottom of page http://localhost:8080/symbols.html .
+- some info in the terminal output of the newLISP process about possible user actions;
+- some Help at the bottom of page `http://localhost:8080/symbols.html`.
 
 
 ## Limitations
@@ -59,9 +59,10 @@ Inspector shows a newLISP system on top
   **as seen from the newLISP programmer.**
 
 It does not show the inner workings of the interpreter like
-- call stack,
+- call stack, and
 - environment stack;
-which would be needed for a full-featured debugger (which would need even more for e.g. setting breakpoints).
+
+which would be interesting for debugging (a full-featured debugger would need even more for e.g. setting breakpoints).
 
 
 ## Important notes to this piece of software
