@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>newLISP Inspector</title>
+
+  <script src="jquery-2.1.4.js"></script>
+  <script src="tree.jquery.js"></script>
+
+  <link rel="stylesheet" href="jqtree.css" />
+
+  <script src="egBase.js" charset="utf-8"></script>
+  <script src="symbols.js" charset="utf-8">
+
+    /*
+    $(document).ready(function(){
+    alert("document ready");
+    });
+    */
+  </script>
+  <link rel="stylesheet" href="inspector.css" />
+
+</head>
+<body>
+  <div id="tree1"></div>
+
+  <div id="help">
+    <a name="Help"></a>
+    <h3>Help</h3>
+
+    <table id="help_mouse">
+      <tr>
+        <th colspan="2">Mouse</th>
+      </tr>
+      <tr>
+        <td>click<br> folder marker &nbsp;&nbsp; ► &nbsp;,&nbsp; ▼</td>
+        <td>open/close folder</td>
+      </tr>
+      <tr>
+        <td>click<br> item</td>
+        <td>select/unselect</td>
+      </tr>
+      <tr>
+        <td>double-click<br> lambda/macro/list symbol item</td>
+        <td>create folder<br> with referenced symbols at top</td>
+      </tr>
+    </table>
+
+    <table id="help_keyboard">
+      <tr>
+        <th colspan="2">Keyboard navigation at selected item</th>
+      </tr>
+      <tr>
+        <td>&#8594;</td><td>open folder</td>
+      </tr>
+      <tr>
+        <td>&#8592;</td><td>close folder</td>
+      </tr>
+      <tr>
+        <td>&#8593; &#8595;</td><td>navigate up/down to next item</td>
+      </tr>
+      <tr>
+        <td>&lt;Return&gt;<br>at selected lambda/macro/list symbol item</td>
+        <td>create folder<br> with referenced symbols at top</td>
+      </tr>
+    </table>
+
+    <table id="help_URLs">
+      <tr>
+        <th colspan="2">URLs</th>
+      </tr>
+      <tr>
+        <td class="URL"><a href="http://localhost:8080/symbols.html#MAIN">http://localhost:8080/symbols.html#MAIN</a></td>
+        <td class="URL">jump to MAIN context folder</td>
+      </tr>
+      <tr>
+        <td class="URL"><a href="http://localhost:8080/symbols.html#Class:Class">http://localhost:8080/symbols.html#Class:Class</a></td>
+        <td class="URL">jump to Class:Class symbol inside Class context folder</td>
+      </tr>
+      <tr>
+        <td class="URL"><a href="http://localhost:8080/symbols.html#FOOPReference:delete-all-refs">http://localhost:8080/symbols.html#FOOPReference:delete-all-refs
+        </a></td>
+        <td>jump to FOOPReference:delete-all-refs symbol inside FOOPReference context folder</td>
+      </tr>
+      <tr>
+        <td class="URL"><a href="http://localhost:8080/symbols.html#Help">http://localhost:8080/symbols.html#Help</a></td>
+        <td class="URL">jump to Help</td>
+      </tr>
+    </table>
+
+    <table id="special_OPs">
+      <tr>
+        <th colspan="2">Special OPs</th>
+      </tr>
+      <tr>
+        <td class="URL"><a href="http://localhost:8080/leave">http://localhost:8080/leave</a></td>
+        <td class="URL">leave Inspector server process (to be (re)loaded three times to end loop of demo)</td>
+      </tr>
+      <tr>
+        <td class="URL"><a href="http://localhost:8080/symbols-JSON">http://localhost:8080/symbols-JSON</a></td>
+        <td class="URL">show all symbols of all contexts in JSON format</td>
+      </tr>
+      <tr>
+        <td class="URL"><a href="http://localhost:8080/symbols-JSON?inList=Class:Class">http://localhost:8080/symbols-JSON?inList=Class:Class</a></td>
+        <td class="URL">show all symbols referenced by some lambda/macro/list (here Class:Class) in JSON format</td>
+      </tr>
+    </table>
+
+  </div>
+
+</body>
