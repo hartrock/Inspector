@@ -40,14 +40,14 @@ which ends it (but it can be restarted).
 This demo starts Inspector inside a simple counting loop (counting from 1 to 3). It demonstrates, how a change of a variable can be inspected by using the browser GUI.
 
 1. Clone this repository and enter it (`REPO_DIR` usually will be `Inspector` somewhere in your filesystem):  
-     `cd REPO_DIR`
+     `cd REPO_DIR`
 2. Run  
-     `./demo.lsp`  
+     `./demo.lsp`  
    or  
-     `newlisp demo.lsp`  
+     `newlisp demo.lsp`  
    (the latter may be needed, if newlisp path differs from /usr/local/bin/newlisp).
 3. Load  
-     `http://localhost:8080/symbols.html` (*)  
+     `http://localhost:8080/symbols.html` (*)  
    from a browser (firefox works).
 
 There is
