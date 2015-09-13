@@ -2,7 +2,7 @@
 
 For inspecting a newLISP system.
 
-[Directly to description of Demo](#demo) leading to a screenshot like the following:
+[Directly to how to start a Demo](#demo), leading to a screenshot like the following:
 
 ![](screenshot.png)
 
@@ -37,7 +37,13 @@ which ends it (but it can be restarted).
 
 ## Demo
 
-This demo starts Inspector inside a simple counting loop (counting from 1 to 3). It demonstrates, how a change of a variable can be inspected by using the browser GUI.
+There is a demo, which starts Inspector inside a simple counting loop (counting from 1 to 3), so it will be restarted again after leaving it.  
+It shows:
+- Inspector's functionality,
+- how to start Inspector from newLISP, and
+- how a _change_ of a variable can be inspected by switching between:
+  - start commands from inside a newLISP process (programmatically or typed-in newLISP terminal), and
+  - leave commands by loading a leave URI from the browser.
 
 1. Clone this repository and enter it (`REPO_DIR` usually will be `Inspector` somewhere in your filesystem):  
      `cd REPO_DIR`
