@@ -2,7 +2,7 @@
 
 For inspecting a newLISP system.
 
-Directly to description of [Demo](https://github.com/hartrock/Inspector#demo) leading to a screenshot like the following:
+[Directly to description of Demo](https://github.com/hartrock/Inspector#demo) leading to a screenshot like the following:
 
 ![](https://github.com/hartrock/Inspector/blob/master/screenshot.png)
 
@@ -39,13 +39,15 @@ until loading
 
 This demo starts Inspector inside a simple counting loop (counting from 1 to 3). It demonstrates, how a change of a variable can be inspected by using the browser GUI.
 
-1. Run
+1. Clone this repository and enter it (`REPO_DIR` usually will be `Inspector` somewhere in your filesystem):
+    `cd REPO_DIR`.
+2. Run
     `./demo.lsp`
   or
     `newlisp demo.lsp`
   (the latter may be needed, if newlisp path differs from /usr/local/bin/newlisp).
 
-2. Load
+3. Load
   `http://localhost:8080/symbols.html` (*)
 from a browser (firefox works).
 
