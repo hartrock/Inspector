@@ -6,7 +6,7 @@
   (set 'Init_allowLoadOnce true ; .. below, guard deleted in modules/Init.lsp
        'Init:nodebug true) ; nil for more debug messages
   ;; script dir detection
-  (set 'Inspector:scriptname "inspector.lsp"
+  (set 'Inspector:scriptname "demo.lsp"
        'Inspector:dir ; be robust against CLI args not containing scriptname
        (0 (-- (- (length Inspector:scriptname))); -- for removing path separator
           (first (filter (fn (a) (find Inspector:scriptname a))
