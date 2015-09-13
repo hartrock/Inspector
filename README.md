@@ -2,7 +2,7 @@
 
 For inspecting a newLISP system.
 
-[Directly to how to start a Demo](#demo), leading to a screenshot like the following:
+Directly to [Demo](#demo), leading to a screenshot like the following:
 
 ![](screenshot.png)
 
