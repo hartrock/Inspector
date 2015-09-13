@@ -2,9 +2,9 @@
 
 For inspecting a newLISP system.
 
-[Directly to description of Demo](https://github.com/hartrock/Inspector#demo) leading to a screenshot like the following:
+[Directly to description of Demo](#demo) leading to a screenshot like the following:
 
-![](https://github.com/hartrock/Inspector/blob/master/screenshot.png)
+![](screenshot.png)
 
 ## Introduction
 
