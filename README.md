@@ -19,11 +19,11 @@ Essential building blocks of a newLISP system are symbols evaluating to some val
 
 So here is an 'Inspector' app for inspecting all newLISP symbols: GUI are browser windows, getting their input from a newLISP webserver/webservice process.
 
-Communication between newLISP and the browser is synchronous: after starting the newLISP webservice symbols can be expected by loading
-  http://localhost:8080/symbols.html
-until loading
-  http://localhost:8080/leave (*)
-, which ends it (but it can be restarted).
+Communication between newLISP and the browser is synchronous: after starting the newLISP webservice symbols can be explored by (re)loading
+  `http://localhost:8080/symbols.html`,
+until (re)loading
+  `http://localhost:8080/leave` (*),
+which ends it (but it can be restarted).
 
 
 ## Some properties of Inspector
