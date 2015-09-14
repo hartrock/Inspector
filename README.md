@@ -4,10 +4,10 @@ For inspecting a newLISP system.
 
 Directly to [How to start](#How-to-start), leading to a screenshots like the following:
 
-## Viewing Inspector's symbols
+### Viewing Inspector's symbols
 ![](screenshot_inspect_self.png)
 
-## Viewing snapshot'ed symbols of another newLISP process
+### Viewing snapshot'ed symbols of another newLISP process
 ![](screenshot_inspect_snapshot.png)
 
 
@@ -84,7 +84,7 @@ There is
 - some Help at the bottom of page `http://localhost:8080/symbols.html`.
 
 
-### Snapshotting and viewing symbols from _another_ newLISP process
+### Snapshot'ing and viewing symbols from _another_ newLISP process
 
 1. Run  
      `./startIt.lsp`  
@@ -96,6 +96,7 @@ There is
      `http:localhost:8080/symbols.html?file=/tmp/snapshot.json` (*)  
    from a browser (works under Linux, for other OSes another filepath may be needed).
 
+Needed infrastructure for Inspector - `./snapshot.lsp` - is quite big, but for snapshot'ing - `./snapshot.lsp` - only loading of two modules is needed.
 
 ### Limitations
 
