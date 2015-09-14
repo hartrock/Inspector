@@ -1,4 +1,4 @@
-#!/usr/local/bin/newlisp
+#!/usr/bin/env newlisp
 (load "modules/Util.lsp")
 (load "modules/Introspection.lsp")
 
