@@ -7,7 +7,7 @@ Directly to [How to start](#How-to-start), leading to a screenshots like the fol
 ### Viewing Inspector's symbols
 ![](screenshot_inspect_self.png)
 
-### Viewing snapshot'ed symbols of another newLISP process
+### Viewing snapshot'ed symbols of _another_ newLISP process
 ![](screenshot_inspect_snapshot.png)
 
 
