@@ -255,9 +255,8 @@ function createChild(id) {
 var createForContextsFlag = true;
 
 var symsURLBase = "/symbols-JSON";
-var symsURL = symsURLBase + (eg.getURLVars().noInspectorSymbols
-                             ? "?noInspectorSymbols" // forward flag
-                             : "");
+var symsURL = symsURLBase + window.location.search;
+
 var jqxhr = $.getJSON(symsURL, function(data) {
   symsMap = data;
   var allSyms = eg.keys(symsMap).sort(sort_syms);
@@ -361,7 +360,10 @@ var jqxhr = $.getJSON(symsURL, function(data) {
     // for reaching node given by hash:
     $(window).trigger('hashchange');
   })
-  .fail(function() {
+  .fail(function(data) {
+    var urlVars = eg.getURLVars();
+    $('#tree1').after("<h1>Problem</h1>\n"
+                      + "<p>" + data.responseText + "</p>");
     console.log( ".fail" );
   })
   .always(function() {
@@ -379,10 +381,8 @@ $(window).on('hashchange', function(ev) {
       change = true;
     };
   }
-  if (change) {
-    // timeout helps to reach the correct position
-    setTimeout(function() { $('#tree1').tree('scrollToNode', node); }, 100);
-  }
+  // timeout helps to reach the correct position
+  setTimeout(function() { $('#tree1').tree('scrollToNode', node); }, 100);
 });
 
 if (null) {

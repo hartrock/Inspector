@@ -2,9 +2,14 @@
 
 For inspecting a newLISP system.
 
-Directly to [Demo](#demo), leading to a screenshot like the following:
+Directly to [How to start](#How-to-start), leading to a screenshots like the following:
 
-![](screenshot.png)
+## Viewing Inspector's symbols
+![](screenshot_inspect_self.png)
+
+## Viewing snapshot'ed symbols of another newLISP process
+![](screenshot_inspect_snapshot.png)
+
 
 ### Introduction
 
@@ -35,30 +40,61 @@ which ends it (but it can be restarted).
 - additional folders by double-clicking onto a symbol evaluating to some structure *containing* symbols: like lambdas, macros and lists (this is for getting *related* symbols together into their own folder).
 
 
-### Demo
+### How to start
 
-There is a demo, which starts Inspector inside a simple counting loop (counting from 1 to 3), so it will be restarted again after leaving it.  
-It shows:
-- Inspector's functionality,
-- how to start Inspector from newLISP, and
-- how a _change_ of a variable can be inspected by switching between:
-  - start commands from inside a newLISP process (programmatically or typed-in newLISP terminal), and
-  - leave commands by loading a leave URI from the browser.
-
-1. Clone this repository and enter it (`REPO_DIR` usually will be `Inspector` somewhere in your filesystem):  
+Clone this repository and enter it (`REPO_DIR` usually will be `Inspector` somewhere in your filesystem):  
      `cd REPO_DIR`
-2. Run  
-     `./demo.lsp`  
-   or  
-     `newlisp demo.lsp`  
-   (the latter may be needed, if newlisp path differs from /usr/local/bin/newlisp).
-3. Load  
+   .
+
+### Simple start
+
+Showing:
+- Inspector's functionality,
+- how to start Inspector from newLISP.
+
+1. Run  
+     `./startIt.lsp`  
+   (starts Inspector).
+
+2. Load  
      `http://localhost:8080/symbols.html` (*)  
    from a browser (firefox works).
 
 There is
-- some info in the terminal output of the newLISP process about possible user actions;
 - some Help at the bottom of page `http://localhost:8080/symbols.html`.
+
+
+### Loop demo
+
+This starts Inspector inside a simple counting loop (counting from 1 to 3), so it will be restarted again after leaving it.  
+Showing:
+- how a _change_ of a variable can be inspected by switching between:
+  - start commands from inside a newLISP process (programmatically or typed-in newLISP terminal), and
+  - leave commands by loading the leave URI from the browser.
+
+1. Run  
+     `./startIt_loopDemo.lsp`  
+   (starts Inspector from inside a loop).
+2. Load  
+     `http://localhost:8080/symbols.html` (*)  
+   from a browser.
+
+There is
+- some info in the terminal output of Inspector's newLISP process about possible user actions;
+- some Help at the bottom of page `http://localhost:8080/symbols.html`.
+
+
+### Snapshotting and viewing symbols from _another_ newLISP process
+
+1. Run  
+     `./startIt.lsp`  
+   .
+2. Run  
+     `./snapshot.lsp`  
+   (this makes a snapshot of a freshly started newLISP instance).
+3. Load  
+     `http:localhost:8080/symbols.html?file=/tmp/snapshot.json` (*)  
+   from a browser (works under Linux, for other OSes another filepath may be needed).
 
 
 ### Limitations

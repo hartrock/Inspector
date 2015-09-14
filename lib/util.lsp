@@ -86,31 +86,9 @@
            (ref-all nil func (fn (ignore s) (and (symbol? s) (symPred s)))))))))
 
 
-;; from manual (unique added)
-(define (all-contexts)
-  (unique (filter context? (map eval (symbols MAIN)))))
-
-(define (prefix-term-strings s
-                             , symStr
-                               parsedStr prefixCtx
-                               prefixStr termStr)
-  (set 'symStr (string s))
-  ;;(dbg:expr s symStr)
-  (if (find ":" symStr)
-      (set 'parsedStr (parse symStr ":")
-           'prefixStr (first parsedStr)
-           'termStr (last parsedStr))
-      (set 'prefixCtx (prefix s)
-           'prefixStr (string prefixCtx) ; always in MAIN
-           'termStr symStr))
-  (cons prefixStr termStr))
-(define (term-string)
-  ((prefix-term-string s) 1))
 (define (sym-all strOrSym)
   (map (curry sym strOrSym)
-       (filter (curry Util:sym? strOrSym) (all-contexts))))
-(define (symbols-all)
-  (flat (map symbols (all-contexts))))
+       (filter (curry Util:sym? strOrSym) (Util:all-contexts))))
 (define (irregular-symbol s)
   (and (or (find ":" (string (prefix s)))
            (find ":" (term s)))

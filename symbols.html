@@ -70,21 +70,25 @@
         <th colspan="2">URLs</th>
       </tr>
       <tr>
-        <td class="URL"><a href="http://localhost:8080/symbols.html#MAIN">http://localhost:8080/symbols.html#MAIN</a></td>
+        <td class="URL"><a href="symbols.html#MAIN">symbols.html#MAIN</a></td>
         <td class="URL">jump to MAIN context folder</td>
       </tr>
       <tr>
-        <td class="URL"><a href="http://localhost:8080/symbols.html#Class:Class">http://localhost:8080/symbols.html#Class:Class</a></td>
+        <td class="URL"><a href="symbols.html#Class:Class">symbols.html#Class:Class</a></td>
         <td class="URL">jump to Class:Class symbol inside Class context folder</td>
       </tr>
       <tr>
-        <td class="URL"><a href="http://localhost:8080/symbols.html#FOOPReference:delete-all-refs">http://localhost:8080/symbols.html#FOOPReference:delete-all-refs
+        <td class="URL"><a href="symbols.html#FOOPReference:delete-all-refs">symbols.html#FOOPReference:delete-all-refs
         </a></td>
         <td>jump to FOOPReference:delete-all-refs symbol inside FOOPReference context folder</td>
       </tr>
       <tr>
-        <td class="URL"><a href="http://localhost:8080/symbols.html#Help">http://localhost:8080/symbols.html#Help</a></td>
+        <td class="URL"><a href="symbols.html#Help">symbols.html#Help</a></td>
         <td class="URL">jump to Help</td>
+      </tr>
+      <tr>
+        <td class="URL"><a href="symbols.html?file=/tmp/snapshot.json">symbols.html?file=/tmp/snapshot.json</a></td>
+        <td class="URL">load symbols from a snapshot file (jump hashes thereafter are possible, too)</td>
       </tr>
     </table>
 
@@ -93,15 +97,15 @@
         <th colspan="2">Special OPs</th>
       </tr>
       <tr>
-        <td class="URL"><a href="http://localhost:8080/leave">http://localhost:8080/leave</a></td>
-        <td class="URL">leave Inspector server process (to be (re)loaded three times to end loop of demo)</td>
+        <td class="URL"><a href="leave">leave</a></td>
+        <td class="URL">leave Inspector server process (to be (re)loaded three times to finish startIt_loopDemo.lsp loop)</td>
       </tr>
       <tr>
-        <td class="URL"><a href="http://localhost:8080/symbols-JSON">http://localhost:8080/symbols-JSON</a></td>
+        <td class="URL"><a href="symbols-JSON">symbols-JSON</a></td>
         <td class="URL">show all symbols of all contexts in JSON format</td>
       </tr>
       <tr>
-        <td class="URL"><a href="http://localhost:8080/symbols-JSON?inList=Class:Class">http://localhost:8080/symbols-JSON?inList=Class:Class</a></td>
+        <td class="URL"><a href="symbols-JSON?inList=Class:Class">symbols-JSON?inList=Class:Class</a></td>
         <td class="URL">show all symbols referenced by some lambda/macro/list (here Class:Class) in JSON format</td>
       </tr>
     </table>

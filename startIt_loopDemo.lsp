@@ -1,4 +1,4 @@
-#!/usr/local/bin/newlisp
+#!/usr/bin/env newlisp
 ;; mimic .init.lsp if not loaded
 (cond
  ((not Init:Init) ; first guard
@@ -6,7 +6,7 @@
   (set 'Init_allowLoadOnce true ; .. below, guard deleted in modules/Init.lsp
        'Init:nodebug true) ; nil for more debug messages
   ;; script dir detection
-  (set 'Inspector:scriptname "demo.lsp"
+  (set 'Inspector:scriptname "startIt_loopDemo.lsp"
        'Inspector:dir ; be robust against CLI args not containing scriptname
        (0 (-- (- (length Inspector:scriptname))); -- for removing path separator
           (first (filter (fn (a) (find Inspector:scriptname a))

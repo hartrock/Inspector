@@ -5,6 +5,30 @@
 (define (default? ctx)
   (sym? (term ctx) ctx))
 
+(define (prefix-term-strings s
+                             , symStr
+                               parsedStr prefixCtx
+                               prefixStr termStr)
+  (set 'symStr (string s))
+  ;;(dbg:expr s symStr)
+  (if (find ":" symStr)
+      (set 'parsedStr (parse symStr ":")
+           'prefixStr (first parsedStr)
+           'termStr (last parsedStr))
+      (set 'prefixCtx (prefix s)
+           'prefixStr (string prefixCtx) ; always in MAIN
+           'termStr symStr))
+  (cons prefixStr termStr))
+(define (term-string)
+  ((prefix-term-string s) 1))
+
+;; from manual (unique added)
+(define (all-contexts)
+  (unique (filter context? (map eval (symbols MAIN)))))
+(define (symbols-all)
+  (flat (map symbols (all-contexts))))
+
+
 (define (lambda-or-macro-symbol? aSym)
   (and (symbol? aSym)
        (or (lambda? (eval aSym))

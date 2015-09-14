@@ -84,7 +84,7 @@
 (define-macro (add-location-info)
   (letn ((exprSym (exprList 0))
          ;;(newExprSym (sym (append (term exprSym) "_tweaked") (prefix exprSym))))
-         (prefixTerm (util:prefix-term-strings exprSym))
+         (prefixTerm (Util:prefix-term-strings exprSym))
          (newExprSym (read-expr (append (prefixTerm 0) ":"
                                         (prefixTerm 1) "_tweaked"))))
     ;;(println "exprSym: " exprSym ", newExprSym: " newExprSym)
