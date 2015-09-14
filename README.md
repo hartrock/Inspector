@@ -84,7 +84,7 @@ There is
 - some Help at the bottom of page `http://localhost:8080/symbols.html`.
 
 
-### Snapshot'ing and viewing symbols from _another_ newLISP process
+### Snapshot'ing and viewing symbols of _another_ newLISP process
 
 1. Run  
      `./startIt.lsp`  
