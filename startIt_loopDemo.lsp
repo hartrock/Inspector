@@ -8,16 +8,18 @@
   ;; script dir detection
   (set 'Inspector:scriptname "startIt_loopDemo.lsp"
        'Inspector:dir ; be robust against CLI args not containing scriptname
-       (0 (-- (- (length Inspector:scriptname))); -- for removing path separator
+       (0 (- (length Inspector:scriptname)) ; only leave dirpath
           (first (filter (fn (a) (find Inspector:scriptname a))
                          (main-args)))))
+  (if (null? Inspector:dir)
+      (set 'Inspector:dir ".")) ; cwd
   ;; Inspector:dir to be used as Init:newlisp_dir: needs rel modules/ and lib/
   (set 'Init:newlisp_dir Inspector:dir)
   (set 'Init:moduledir (append Init:newlisp_dir "/modules"))
   (set 'Init:libdir (append Init:newlisp_dir "/lib"))
   (load (append Init:moduledir "/Init.lsp"))
   (set 'Init:Init true))
- ("default" ; .Init.lsp loaded
+ ("default" ; .init.lsp loaded
   (set 'Inspector:dir (append Init:newlisp_dir "/Inspector"))))
 
 ;;
