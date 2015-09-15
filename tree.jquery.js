@@ -548,8 +548,16 @@ ElementsRenderer = (function() {
     return ul;
   };
 
+  // [sr] Note to caching:
+  // Caching is only suited for static content: if there is adding of
+  // subelements - programmatically or by drag'n'drop, LIs typically have to be
+  // rerendered.
   ElementsRenderer.prototype.createLi = function(node) {
     var li;
+    // [sr] caching for static content, ..
+    if (node.cachedLi) {
+      return node.cachedLi;
+    }
     if (node.isFolder()) {
       li = this.createFolderLi(node);
     } else {
@@ -557,6 +565,10 @@ ElementsRenderer = (function() {
     }
     if (this.tree_widget.options.onCreateLi) {
       this.tree_widget.options.onCreateLi(node, $(li));
+    }
+    // [sr] .. controlled by node.cacheLiFlag
+    if (node.cacheLiFlag) {
+      node.cachedLi = li;
     }
     return li;
   };

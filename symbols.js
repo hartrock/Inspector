@@ -1,6 +1,8 @@
-/* example from
+/* Example as well as jqTree from:
  *   https://mbraak.github.io/jqTree/
+ * .
  */
+/*
 var data = [
     {
         label: 'node1',
@@ -16,7 +18,6 @@ var data = [
         ]
     }
 ];
-/*
 $(function() {
     $('#tree1').tree({
         data: data
@@ -92,6 +93,7 @@ function infoForSym(sym) {
           + (sym["protected?"] ? "true" : "nil") + ", prefix: " + sym.prefix
           + ", term: " + sym.term);
 }
+/* older version of next func: it's almost ASCII art... */
 /*
 function infoForVal(val) {
   var res = (
@@ -188,10 +190,6 @@ function sort_symsInContext(id_1, id_2) {
              : sort_syms(id_1, id_2)));
 };
 
-function symID(symObj) {
-  return symObj.prefix + ":" + symObj.term;
-}
-
 function classesForVal(valObj) {
   return "inspector " + valObj.type;
 }
@@ -204,6 +202,7 @@ function isListSym(id) {
 
 var nodeIx = 0;
 var unusedIDs = {};
+var cacheLIs_Flag = true; // caching works, if drag'n'drop is switched off
 function createFolder(ID, childsData) {
   // copy new syms into symsMap (overwrite shouldn't hurt)
   for (var key in childsData) {
@@ -218,18 +217,19 @@ function createFolder(ID, childsData) {
   var childs = eg.map2arr(eg.keys(childsData), createChild);
   //eg.log("childs: ", childs);
   var node = $('#tree1').tree('getTree').children[0];
-  $('#tree1').tree(
-    'addNodeBefore',
-    {
-      ID: ID, //symID(sym),
-      id: ++nodeIx,
-      folderFlag: true,
-      label: '[' + type + '] ' + ID
-    },
-    node
-  );
-  node = $('#tree1').tree('getNodeById', nodeIx);
-  $('#tree1').tree('loadData', childs, node)
+  var newNode_id = ++nodeIx;
+  var newNodeData = {
+    ID: ID,
+    id: newNode_id,
+    folderFlag: true,
+    label: '[' + type + '] ' + ID
+  };
+  // first LI rendered by adding node not suited for caching, but ..
+  $('#tree1').tree('addNodeBefore', newNodeData, node);
+  node = $('#tree1').tree('getNodeById', newNode_id); // node !== newNodeData
+  // .. second LI will be rendered *after* loading childs data ..
+  node.cacheLiFlag = cacheLIs_Flag; //.. (which leads to another LI rendering)..
+  $('#tree1').tree('loadData', childs, node); // .. and can be cached thereafter
 }
 
 function createChild(id) {
@@ -243,7 +243,8 @@ function createChild(id) {
   } else {
     nodeID = ++nodeIx;
   }
-  return {
+  return { // constant after rendered once (as long there is no drag'n'drop)
+    cacheLiFlag: cacheLIs_Flag,
     id: nodeID,
     ID: id, // for anchor
     label: ((indirectCtxRefSym(sym) ? "[ref] " : "")
@@ -253,7 +254,6 @@ function createChild(id) {
 }
 
 var createForContextsFlag = true;
-
 var symsURLBase = "/symbols-JSON";
 var symsURL = symsURLBase + window.location.search;
 
@@ -277,7 +277,9 @@ var jqxhr = $.getJSON(symsURL, function(data) {
       allSyms.filter(create_pred_sym_inContext(sym.term))
       .sort(sort_symsInContext);
     
-    var res = {
+    var res = { // caching possible: ..
+      // .. LI will be rendered *after* structure with childs has been built ..
+      cacheLiFlag: cacheLIs_Flag, // .. so it can be cached
       id: sym.term, //++ix,
       ID: sym.term,
       folderFlag: true,
@@ -290,7 +292,7 @@ var jqxhr = $.getJSON(symsURL, function(data) {
   $('#tree1').tree({
     data: nodes,
     onCreateLi: function(node, $li) {
-      $li.addClass('foo');
+      //eg.log("onCreateLi: ", node);
       var titleElem = $li.find('.jqtree-title');
       titleElem.addClass('inspector');
       // add anchor
@@ -312,13 +314,13 @@ var jqxhr = $.getJSON(symsURL, function(data) {
       //   $li.attr('id', node.id);
       //   $li.find('.jqtree-title').before('<a name="bar"></a>');
     },
-    dragAndDrop: false // allows selection of text, true restructuring tree...
+    dragAndDrop: false // false allows selection of text, and caching of LIs
   });
 })
   .done(function() {
     // from here on all symname IDs are exhausted, but jqtree needs unique ones:
     createForContextsFlag = false; // this flag states this
-    console.log( ".done" );
+    //eg.log( ".done" );
     $('#tree1').bind(
       'tree.dblclick',
       function(event) {
