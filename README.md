@@ -2,7 +2,7 @@
 
 For inspecting a newLISP system.
 
-Directly to [How to start](#How-to-start), leading to a screenshots like the following:
+Directly to [How to start](#how-to-start), leading to a screenshots like the following:
 
 ### Viewing Inspector's symbols
 ![](screenshot_inspect_self.png)
