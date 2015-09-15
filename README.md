@@ -42,8 +42,10 @@ which ends it (but it can be restarted).
 
 ### How to start
 
+Inspector runs with newLISP 10.6.2 (stable) and 10.6.4 (inprogress); tested under Linux only.
+
 Clone this repository and enter it (`REPO_DIR` usually will be `Inspector` somewhere in your filesystem):  
-     `cd REPO_DIR`
+     `cd REPO_DIR`  
    .
 
 ### Simple start
