@@ -39,17 +39,11 @@
 
 ;(Inspector:start)
 
-(define (aLoop)
-  (set 's "-->")
-  (set 'end 20)
-  (for (anIx 1 end)
-       ;; do some more interesting stuff ;-)
-       (set 'b (* 2 anIx) 'c (+ 1 anIx) 'd (* b c) 'e (* anIx anIx))
-       (set 's (dup s))
-       (println ">>>>>>>>>>>>>>>>>>>>>"
-                [text]
-In words reaching ping-pong mode sounds more complicated than it is by just
-doing it. But here are following the steps needed.
+(set 'WS:listening-info-string
+[text]
+>>>>>>>>>>>>>>>>>>>>>
+Reaching ping-pong mode described by words sounds more complicated than it is by
+doing it. These are the steps needed:
 
 1. Run
      ./startIt_pingPong.lsp
@@ -61,27 +55,38 @@ doing it. But here are following the steps needed.
         http://localhost:8080/symbols.html?pingPong#MAIN:aLoop
       (this is searching a lambda/macro/list symbol of interest in corresponding
       [ctx] folder).
-   b) Double-click (or select & Return) MAIN:aLoop, to create a
+   b) Double-click (or select & Return) MAIN:aLoop, to *create* a folder
         '[lambda] MAIN:aLoop'
-      folder containing symbols of this lambda at *top* of tree control (in
-      front of all other ([ctx]) folders) - so far no ping-pong -.
+      , containing symbols of this lambda at *top* of tree control (in front of
+      all other ([ctx]) folders) - so far no ping-pong -.
    c) Go to created folder at top and *open* it: this is the *trigger* for
       starting ping-pong (Note: if there are more user created folders at top
       *all* have to be opened).
 
-3. Now the following happens:
-   a) Inspector GUI loads symbols in top folder from Inspector server and
-      visualizes their current evaluations;
-   b) thereafter it releaes the server by sending a command for finishing its
-      webservice;
-   c) server process is free to do other stuff for a while - in the meantime GUI
-      polls to wait for this to happen -;
-   d) until it gives back control to GUI by calling (Inspector:start) again.
+Now the following happens:
 
-   In the example this will be done repeatedly in a simple counting loop.
+1. Inspector GUI loads symbols in top folder from Inspector server and
+   visualizes their current evaluations;
+2. thereafter it releaes the server by sending a command for finishing its
+   webservice;
+3. server process
+   - is free to do other stuff for a while
+   - until it gives back control to GUI by calling (Inspector:start) again
+     (in the meantime Inspector GUI  polls to wait for this to happen).
+In this example this happens repeatedly by a simple counting loop at server
+side.
+>>>>>>>>>>>>>>>>>>>>>
 [/text]
-">>>>>>>>>>>>>>>>>>>>>"
-" anIx: " anIx "\n")
+)
+
+(define (aLoop)
+  (set 's "-->")
+  (set 'end 20)
+  (for (anIx 1 end)
+       ;; do some more interesting stuff ;-)
+       (set 'b (* 2 anIx) 'c (+ 1 anIx) 'd (* b c) 'e (* anIx anIx))
+       (set 's (dup s))
+       (println " anIx: " anIx "\n")
 
        (Inspector:start)))
 

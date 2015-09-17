@@ -942,6 +942,10 @@
   (logg:msg-loc 'send-response "num_sent: " num_sent)
 )
 
+(define (listening-info)
+  (if listening-info-string
+      (logg:info "\n" listening-info-string)))
+
 (define (server_simple)
   (local
       (curr funOrNil listen conn
@@ -970,6 +974,7 @@
 
        ((= curr "listen")
         (prepare)
+        (listening-info)
         (set 'conn (net-accept listen))
         (when (net-error)
           (logg:error "net-error: " (net-error))
