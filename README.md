@@ -2,12 +2,23 @@
 
 For inspecting a newLISP system.
 
-Directly to [How to start](#how-to-start), leading to a screenshots like the following:
+Directly to [How to start](#how-to-start).
 
-### Viewing Inspector's symbols
+### News
+
+- v0.3: [Ping-pong demo][#ping-pong-demo]  
+  In ping-pong mode
+  - control flow switches between Inspector server and GUI, and
+  - changed symbol evaluations will be automatically updated in GUI.
+
+
+
+### Screenshots
+
+#### Viewing Inspector's symbols
 ![](screenshot_inspect_self.png)
 
-### Viewing snapshot'ed symbols of _another_ newLISP process
+#### Viewing snapshot'ed symbols of _another_ newLISP process
 ![](screenshot_inspect_snapshot.png)
 
 
@@ -72,7 +83,7 @@ There is
 
 #### Demos
 
-There are some demos (from simple to more advanced).
+There are some demos (from less to more advanced).
 
 ##### Loop demo
 

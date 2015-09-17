@@ -79,8 +79,11 @@ td.URL {
     text-align:left;
 }
 
-span.codesnippet {
+span.command_snippet {
 /*    background-color: red; */
     /* text-align: left; */
     font-family: monospace;
+}
+span.code_snippet {
+    font-weight: bold;
 }

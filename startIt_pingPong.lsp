@@ -70,8 +70,8 @@ Now the following happens:
 2. thereafter it releaes the server by sending a command for finishing its
    webservice;
 3. server process
-   - is free to do other stuff for a while
-   - until it gives back control to GUI by calling (Inspector:start) again
+   - is free to do other stuff for a while ...
+   - ... until it gives back control to GUI by calling (Inspector:start) again
      (in the meantime Inspector GUI  polls to wait for this to happen).
 In this example this happens repeatedly by a simple counting loop at server
 side.
