@@ -12,6 +12,8 @@
   (Inspector:start)
 , and left from browser by loading:
   http://localhost:8080/leave
+, or used in ping-pong mode via:
+  http://localhost:8080/symbols.html?pingPong
 .
 You can jump to a symbol by using its anchor; e.g. for jumping to MAIN:MAIN use:
   http://localhost:8080/symbols.html#MAIN:MAIN
@@ -19,7 +21,8 @@ You can jump to a symbol by using its anchor; e.g. for jumping to MAIN:MAIN use:
 
 (define (render-symbols rname requestHeaders)
   (cons (symbols MAIN) "text/plain"))
-
+(define (heartbeat)
+  (cons (date (date-value) 0 "[%Y-%m-%d %X] Here I am...") "text/plain"))
 (define (symbols-JSON rname rparams requestHeaders
                       , listSymStr listVal syms
                         valStr
@@ -59,6 +62,7 @@ You can jump to a symbol by using its anchor; e.g. for jumping to MAIN:MAIN use:
   (read-file (append Inspector:dir "/" file)))
 
 (define (setup)
+  (WS:create-eval-resource "heartbeat" 'heartbeat)
   (WS:create-eval-resource "symbols" 'render-symbols)
   (WS:create-eval-resource "symbols-JSON" 'symbols-JSON)
 

@@ -11,6 +11,7 @@ Directly to [How to start](#how-to-start), leading to a screenshots like the fol
 ![](screenshot_inspect_snapshot.png)
 
 
+
 ### Introduction
 
 Easily inspecting a running system
@@ -31,6 +32,7 @@ until (re)loading
 which ends it (but it can be restarted).
 
 
+
 ### Some properties of Inspector
 
 - synchronous communication of GUI with Inspector webservice;
@@ -38,6 +40,7 @@ which ends it (but it can be restarted).
 - jump directly to symbols by using hashes/anchors (e.g. http://localhost:8080/#MAIN:MAIN refers to MAIN context symbol);
 - context folders structuring symbol space;
 - additional folders by double-clicking onto a symbol evaluating to some structure *containing* symbols: like lambdas, macros and lists (this is for getting *related* symbols together into their own folder).
+
 
 
 ### How to start
@@ -48,7 +51,8 @@ Clone this repository and enter it (`REPO_DIR` usually will be `Inspector` somew
      `cd REPO_DIR`  
    .
 
-### Simple start
+
+#### Simple start
 
 Showing:
 - Inspector's functionality,
@@ -66,7 +70,11 @@ There is
 - some Help at the bottom of page `http://localhost:8080/symbols.html`.
 
 
-### Loop demo
+#### Demos
+
+There are some demos (from simple to more advanced).
+
+##### Loop demo
 
 This starts Inspector inside a simple counting loop (counting from 1 to 3), so it will be restarted again after leaving it.  
 Showing:
@@ -75,7 +83,7 @@ Showing:
   - leave commands by loading the leave URI from the browser.
 
 1. Run  
-     `./startIt_loopDemo.lsp`  
+     `./startIt_loop.lsp`  
    (starts Inspector from inside a loop).
 2. Load  
      `http://localhost:8080/symbols.html` (*)  
@@ -86,7 +94,7 @@ There is
 - some Help at the bottom of page `http://localhost:8080/symbols.html`.
 
 
-### Snapshot'ing and viewing symbols of _another_ newLISP process
+##### Snapshot'ing and viewing symbols of _another_ newLISP process
 
 1. Run  
      `./startIt.lsp`  
@@ -100,6 +108,20 @@ There is
 
 Needed infrastructure for Inspector - `./snapshot.lsp` - is quite big, but for snapshot'ing - `./snapshot.lsp` - only loading of two modules is needed.
 
+
+##### Ping-pong demo
+
+This shows a ping-pong-like control flow between Inspector server and browser GUI, which works without user interaction after a few preparatory steps: just run
+  `./startIt_pingPong.lsp`
+; more info in its terminal output.
+
+This ping-pong mechanism is suited for viewing changes of symbol values of some interesting lambda/macro/list in time.
+Their symbols will be put together in a user created folder in advance (creation simply by double-click or Return). Changed values of these symbols will be automatically updated in browser view this way.
+
+In opposite to viewing symbols state snapshots of other newLISP processes, whole Inspector infrastructure is needed here.
+
+
+
 ### Limitations
 
 Inspector shows a newLISP system on top
@@ -110,6 +132,7 @@ It does not show the inner workings of the interpreter like
 - environment stack;
 
 which would be interesting for debugging (a full-featured debugger would need even more for e.g. setting breakpoints).
+
 
 
 ### Important notes to this piece of software
@@ -124,6 +147,7 @@ But nevertheless Inspector may be of interest for others
   **as it is now.**
 
 
+
 ### Ideas for further development
 
 It would be nice to have a more low-level interface to the inner state of the newLISP interpreter for
@@ -135,6 +159,7 @@ Technically a websocket could be utilized for lightweighted communication betwee
 For a full-featured debugger probably a very low-level communication hook in the interpreter loop of a to be inspected system would be needed - with some websocket code or similar at C level - for:
 - querying state of call and environment stacks,
 - sending control commands.
+
 
 
 ### Footnotes

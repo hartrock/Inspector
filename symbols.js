@@ -200,17 +200,21 @@ function isListSym(id) {
   return type && (type === "lambda" || type === "macro" || type === "list");
 }
 
-var nodeIx = 0;
-var unusedIDs = {};
-var cacheLIs_Flag = true; // caching works, if drag'n'drop is switched off
-function createFolder(ID, childsData) {
-  // copy new syms into symsMap (overwrite shouldn't hurt)
+function copyIntoSymsMap(childsData) {
+  // copy new syms into symsMap (overwrite needed for updates in ping-pong mode)
   for (var key in childsData) {
     if (! symsMap[key]) {
       unusedIDs[key] = true;
     }
     symsMap[key] = childsData[key];
   }
+}
+var nodeIx = 0;
+var unusedIDs = {};
+var cacheLIs_Flag = true; // caching works, if drag'n'drop is switched off
+var topFolders = [];
+function createFolder(ID, childsData) {
+  copyIntoSymsMap(childsData);
   var sym = symsMap[ID];
   var type = sym.val.type;
   additionalMap = childsData;
@@ -218,8 +222,11 @@ function createFolder(ID, childsData) {
   //eg.log("childs: ", childs);
   var node = $('#tree1').tree('getTree').children[0];
   var newNode_id = ++nodeIx;
+  if (! createForContextsFlag) {
+    topFolders.push(newNode_id);
+  }
   var newNodeData = {
-    ID: ID,
+    ID: ID, // list sym ID, if not context folder; else context name
     id: newNode_id,
     folderFlag: true,
     label: '[' + type + '] ' + ID
@@ -234,6 +241,7 @@ function createFolder(ID, childsData) {
 
 function createChild(id) {
   var sym = symsMap[id];
+  var val = infoForVal(sym.val);
   //eg.log("id: ", id, ", sym: ", sym);
   if (createForContextsFlag) {
     var nodeID = id;
@@ -247,6 +255,8 @@ function createChild(id) {
     cacheLiFlag: cacheLIs_Flag,
     id: nodeID,
     ID: id, // for anchor
+    val: val,
+    hash: sym.valHash, // todo for comparison, because val may be e.g. truncated
     label: ((indirectCtxRefSym(sym) ? "[ref] " : "")
             + sym.prefix + ":" + sym.term
             + (sym.reference ? " → " + sym.target : ""))
@@ -306,7 +316,7 @@ var jqxhr = $.getJSON(symsURL, function(data) {
         $li.addClass(classesForVal(symsMap[node.ID].val));
         titleElem.after('<span class="inspector valChar">' + '-></span>'
                         + '<span class="val">'
-                        + infoForVal(symsMap[node.ID].val)
+                        + node.val
                         + '</span>');
       }
       //node.anchor && $li.find('.jqtree-title').before('<a name="' + node.anchor + '"></a>');
@@ -327,11 +337,7 @@ var jqxhr = $.getJSON(symsURL, function(data) {
         //console.log(event.node);
         var ID = event.node.ID;
         if (isListSym(ID)) {
-          var symsURL = (symsURLBase
-                         + (eg.getURLVars().noInspectorSymbols
-                            ? "?noInspectorSymbols&" // forward flag
-                            : "?")
-                         + "inList=" + ID);
+          var symsURL = symsURLFor(ID);
           $.getJSON(symsURL, function(data) {
             //console.log(data);
             createFolder(ID, data);
@@ -352,7 +358,7 @@ var jqxhr = $.getJSON(symsURL, function(data) {
         event.preventDefault();
         var ID = node.ID;
         if (isListSym(ID)) {
-          var symsURL = symsURLBase + "?inList=" + ID;
+          var symsURL = symsURLFor(ID);
           $.getJSON(symsURL, function(data) {
             createFolder(ID, data);
           });
@@ -362,6 +368,7 @@ var jqxhr = $.getJSON(symsURL, function(data) {
     // for reaching node given by hash:
     $(window).trigger('hashchange');
   })
+  .done(checkForPingPong())
   .fail(function(data) {
     var urlVars = eg.getURLVars();
     $('#tree1').after("<h1>Problem</h1>\n"
@@ -399,4 +406,104 @@ $.getJSON(
         });
     }
 );
+}
+
+var pollTimeout = 2000; // 1s
+function checkForPingPong() {
+  if (eg.getURLVars().pingPong) {
+    setTimeout(pollAndUpdateTopFolders, pollTimeout);
+  }
+}
+function heartbeatThen(todoFun) {
+  eg.log("heartbeatThen()");
+  var jqxhr = $.ajax({
+    url: "/heartbeat"
+  })
+    .done(function(response) {
+      eg.log("response: ", response);
+      todoFun();
+    })
+    .fail(function() {
+      setTimeout(function() { heartbeatThen(todoFun); }, pollTimeout);
+    });
+}
+function leaveThen(thenFun) {
+  eg.log("leave()");
+  var jqxhr = $.ajax({
+    url: "/leave"
+  })
+    .done(function(response) {
+      eg.log("response: ", response);
+    })
+    .fail(function() {
+      eg.log("fail leave()");
+    })
+    .always(thenFun);
+}
+function getNode(node_id) {
+  return $('#tree1').tree('getNodeById', node_id);
+}
+function getState(node_id) {
+  return $('#tree1').tree('getState');
+}
+function getID(node_id) {
+  return getNode(node_id).ID;
+}
+function updateNode(node) {
+  var child = createChild(node.ID);
+  if (node.val !== child.val) {
+    node.cachedLi = false;
+    $('#tree1').tree('updateNode', node, child);
+  }
+}
+function symsURLFor(ID) {
+  return (symsURLBase + "?inList=" + ID);
+}
+function updateTopFolder(node_id) {
+  var node = getNode(node_id);
+  node.cacheLiFlag = false;
+  node.children.map(function(childNode) {
+    updateNode(childNode);
+  });
+}
+var pingPongFlag = false;
+function pollAndUpdateTopFolders() {
+  if (! topFolders.length) {
+    setTimeout(pollAndUpdateTopFolders, pollTimeout);
+    return;
+  }
+  var openNodes = getState().open_nodes;
+  var closedTopFolders = topFolders.filter(function(topFolder_id) {
+    return ! eg.arrContains(openNodes, topFolder_id);
+  });
+  if (closedTopFolders.length) {
+    if (pingPongFlag) {
+      pingPongFlag = false;
+      alert("Some top folders closed:\nstopping ping-pong mode.");
+    }
+    setTimeout(pollAndUpdateTopFolders, pollTimeout);
+    return;
+  }
+  if (! pingPongFlag) {
+    pingPongFlag = true;
+    alert("All top folders open:\nstarting ping-pong mode.");
+  }
+  // all top folders are open from here
+  heartbeatThen(function() {
+    var actionCount = 0;
+    topFolders.map(function(node_id) {
+      var ID = getID(node_id);
+      $.getJSON(symsURLFor(ID), function(data) {
+        copyIntoSymsMap(data);
+        updateTopFolder(node_id, data);
+      })
+        .always(function() {
+          if (++actionCount === topFolders.length) {
+            leaveThen(function() {
+              setTimeout(pollAndUpdateTopFolders, pollTimeout); // repeat
+            })
+          }
+        });
+    });
+  });
 }

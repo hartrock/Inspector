@@ -78,3 +78,9 @@ table th { border: thin solid }
 td.URL {
     text-align:left;
 }
+
+span.codesnippet {
+/*    background-color: red; */
+    /* text-align: left; */
+    font-family: monospace;
+}

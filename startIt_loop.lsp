@@ -6,7 +6,7 @@
   (set 'Init_allowLoadOnce true ; .. below, guard deleted in modules/Init.lsp
        'Init:nodebug true) ; nil for more debug messages
   ;; script dir detection
-  (set 'Inspector:scriptname "startIt_loopDemo.lsp"
+  (set 'Inspector:scriptname "startIt_loop.lsp"
        'Inspector:dir ; be robust against CLI args not containing scriptname
        (0 (- (length Inspector:scriptname)) ; only leave dirpath
           (first (filter (fn (a) (find Inspector:scriptname a))
@@ -39,20 +39,20 @@
 
 ;(Inspector:start)
 
-(define (loop)
-  (for (ix 1 3)
+(define (aLoop)
+  (for (anIx 1 3)
        (println ">>>>>>>>>>>>>>>>>>>>>")
-       (println "ix: " ix " (/3)")
+       (println "anIx: " anIx " (/3)")
        (println "You could (re)load\n"
                 "  http://localhost:8080/symbols.html\n"
-                "now, and look for the changed value of MAIN:ix.")
+                "now, and look for the changed value of MAIN:anIx.")
        (println "Next increment by loading\n"
                 "  http://localhost:8080/leave\n"
                 ".")
        (println "<<<<<<<<<<<<<<<<<<<<<")
        (Inspector:start)))
 
-(loop)
+(aLoop)
 (println ">>>>>>>>>>>>>>>>>>>>>")
 (println "Return to newLISP interpreter loop.")
 (println Inspector:help)
