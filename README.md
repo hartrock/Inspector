@@ -6,10 +6,12 @@ Directly to [How to start](#how-to-start).
 
 ### News
 
-- v0.3: [Ping-pong demo][#ping-pong-demo]  
+- v0.3: [Ping-pong mode demo](ping-pong-mode-demo)  
   In ping-pong mode
-  - control flow switches between Inspector server and GUI, and
-  - changed symbol evaluations will be automatically updated in GUI.
+  - control flow switches between Inspector's server process and browser GUI,
+  - changed symbol evaluations will be automatically updated in GUI,
+
+  after triggering it by opening user created lambda/macro/list folders (containing their symbols).
 
 
 
@@ -120,16 +122,17 @@ There is
 Needed infrastructure for Inspector - `./snapshot.lsp` - is quite big, but for snapshot'ing - `./snapshot.lsp` - only loading of two modules is needed.
 
 
-##### Ping-pong demo
+##### Ping-pong mode demo
 
-This shows a ping-pong-like control flow between Inspector server and browser GUI, which works without user interaction after a few preparatory steps: just run
-  `./startIt_pingPong.lsp`
-; more info in its terminal output.
+This demo shows a ping-pong-like control flow between Inspector server process and its browser GUI, which works without user interaction after a few preparatory steps: just run  
+  `./startIt_pingPong.lsp`  
+: info about how to proceed from browser GUI will be shown in its terminal output.
 
-This ping-pong mechanism is suited for viewing changes of symbol values of some interesting lambda/macro/list in time.
-Their symbols will be put together in a user created folder in advance (creation simply by double-click or Return). Changed values of these symbols will be automatically updated in browser view this way.
+This ping-pong mode is suited for viewing changes of symbol values of some interesting lambda/macro/list in time.
+Their symbols will be put together in one or more user created folders in advance (creation simply by double-click or Return). Changed values of these symbols will be automatically updated in browser view, if pinp-pong mode has been triggered by opening all of these user created folders (no buttons needed so far).
 
-In opposite to viewing symbols state snapshots of other newLISP processes, whole Inspector infrastructure is needed here.
+Note:  
+In opposite to viewing symbols state snapshots of other newLISP processes, whole Inspector infrastructure is needed for ping-pong mode to work.
 
 
 
