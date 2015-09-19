@@ -6,7 +6,7 @@ Directly to [How to start](#how-to-start).
 
 ### News
 
-- v0.3: [Ping-pong mode demo](ping-pong-mode-demo)  
+- v0.3: [Ping-pong mode demo](#ping-pong-mode-demo)  
   In ping-pong mode
   - control flow switches between Inspector's server process and browser GUI,
   - changed symbol evaluations will be automatically updated in GUI,
