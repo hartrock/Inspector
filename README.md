@@ -164,6 +164,21 @@ But nevertheless Inspector may be of interest for others
 
 ### Ideas for further development
 
+Note: 'less advanced' does not mean 'less work', but lesser work and risk to get it running as 'more advanced'.
+
+#### Less advanced
+
+Using a websocket connection for two purposes:
+- command line interaction with newLISP interpreter in a text window, while
+- being able to update symbol's eval state at the same time.
+
+This would need some protocol for interaction and some wrapper around interpreter loop for multiplexing commands for
+- querying symbols's state and their responses (first interaction), and
+- interpreter commands and their responses (second interaction).
+
+
+#### More advanced
+
 It would be nice to have a more low-level interface to the inner state of the newLISP interpreter for
 - inspecting call stack together with environment stack (symbol values not at the top of environment stack are invisible now),
 - step by step debugging like in the CLI debugger,
