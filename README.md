@@ -172,7 +172,7 @@ Using a websocket connection for two purposes:
 - command line interaction with newLISP interpreter in a text window, while
 - being able to update symbol's eval state at the same time.
 
-This would need some protocol for interaction and some wrapper around interpreter loop for multiplexing commands for
+This would need some protocol for interaction and some wrapper around interpreter loop for multiplexing commands for:
 - querying symbols's state and their responses (first interaction), and
 - interpreter commands and their responses (second interaction).
 
