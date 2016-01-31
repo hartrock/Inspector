@@ -102,13 +102,23 @@
     ((find o opt_with_arg)
      (++ ix)
      (set 'skip_next true))
+    ((find "/(modules|lib)/.+\\.lsp$" o 0) ; skip modules/ and lib/ *.lsp ..
+     (++ ix))                              ; .. they cannot be a scriptname
     ((find o opt_with_2_args)
      (throw-error "should not been reached"))
     ("default" ; end loop: first newlisp noopt should be script
      (++ ix) ; needed: loop started with ix of previous element
      (set 'breakFlag true))))
-  (set 'scriptpath_ix ix ; 0 or index of first element not being a newlisp option with its args
-       'scriptargs_ ((+ 1 scriptpath_ix) (main-args))
+  ;; scriptpath_ix becomes ix of first extra arg not being:
+  ;; - a newlisp option with its args, or
+  ;; - module/ or lib/ *.lsp;
+  ;; if there is no such extra arg, take ix 0 of newlisp bin name.
+  (set 'scriptpath_ix (if breakFlag ; extra arg?
+                          ix ; ix of first extra arg
+                          0) ; ix of newlisp bin name
+       'scriptargs_ (if breakFlag
+                        ((+ 1 scriptpath_ix) (main-args))
+                        '())
        'scriptpath_ (main-args scriptpath_ix)
        'scriptname_ (last (parse scriptpath_ "/"))))
 ;; iface
@@ -400,21 +410,31 @@
                                (if (context? defaultVal) "[ctx] " "")
                                (string defaultVal)))
                      ""))
-   (symbol? a) (Util:sym-string a)
+   (Util:symbol-like? a) (Util:sym-string a)
    (string a)))
 (define (name-rep a sepFlag restFlag)
-  (local (sym_identical_flag)
   (append
    (if restFlag (if sepFlag "\n, " "; ") "")
-   (if (number? a) (string a) ; source rep: 1 for 1.0 !
-       (symbol? a) (begin
-                     (set 'sym_identical_flag (= a (eval a)))
-                     (rep a))
+   (if (number? a)
+       (string a) ; source rep: 1 for 1.0 !
        (rep a))
-   (if sym_identical_flag " => " " -> ")
+   (if (and (Util:non-dynamic-symbol? a)
+            (= a (eval a)))
+       " => "
+       " -> ")
    (if sepFlag ">>\n" "")
-   (rep (setq lastExprEval (eval a)))
-   (if sepFlag "\n<<" ""))))
+   (if (and (Util:dynamic-symbol? a)
+            (not (Util:dynamic-target-context a)))
+       (setq lastExprEval (append (:preprefix-string (self))
+                                  " No evaluation: dynamic context missing."))
+       (rep (setq lastExprEval (eval a))))
+       ;; debugging:
+       ;; (rep (begin
+       ;;        (write-line 2 (string "\nlastExpr: " a))
+       ;;        (set 'lastExprEval (eval a))
+       ;;        (write-line 2 (string "\nlastExprEval: " lastExprEval))
+       ;;        lastExprEval)))
+   (if sepFlag "\n<<" "")))
 (define (expr-info-string arguments sepFlag)
   (local (nameReps)
     (if (null? arguments)
@@ -514,3 +534,4 @@
 
 
 (context MAIN) ; ...LoggerDebug
+;;EOF

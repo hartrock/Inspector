@@ -10,8 +10,8 @@
   <link rel="stylesheet" href="jqtree.css" />
 
   <script src="egBase.js" charset="utf-8"></script>
+  <script src="symbolsTree.js" charset="utf-8"></script>
   <script src="symbols.js" charset="utf-8">
-
     /*
     $(document).ready(function(){
     alert("document ready");
@@ -20,51 +20,22 @@
   </script>
   <link rel="stylesheet" href="inspector.css" />
 
-</head>
-<body>
-  <div id="tree1"></div>
+  <script> 
+    $(function(){
+      $("#div_treeHelp_common").load("tree_help_common.html.inc"); 
+    });
+  </script>
 
-  <div id="help">
+</head>
+
+<body>
+  <div id="div_tree"></div>
+  <div id="div_treeHelp">
     <a name="Help"></a>
     <h3>Help</h3>
 
-    <table id="help_mouse">
-      <tr>
-        <th colspan="2">Mouse</th>
-      </tr>
-      <tr>
-        <td>click<br> folder marker &nbsp;&nbsp; ► &nbsp;,&nbsp; ▼</td>
-        <td>open/close folder</td>
-      </tr>
-      <tr>
-        <td>click<br> item</td>
-        <td>select/unselect</td>
-      </tr>
-      <tr>
-        <td>double-click<br> lambda/macro/list symbol item</td>
-        <td>create folder<br> with referenced symbols at top</td>
-      </tr>
-    </table>
-
-    <table id="help_keyboard">
-      <tr>
-        <th colspan="2">Keyboard navigation at selected item</th>
-      </tr>
-      <tr>
-        <td>&#8594;</td><td>open folder</td>
-      </tr>
-      <tr>
-        <td>&#8592;</td><td>close folder</td>
-      </tr>
-      <tr>
-        <td>&#8593; &#8595;</td><td>navigate up/down to next item</td>
-      </tr>
-      <tr>
-        <td>&lt;Return&gt;<br>at selected lambda/macro/list symbol item</td>
-        <td>create folder<br> with referenced symbols at top</td>
-      </tr>
-    </table>
-
+    <div id="div_treeHelp_common"></div>
+    
     <table id="help_URLs">
       <tr>
         <th colspan="2">URLs</th>
@@ -126,5 +97,6 @@
       </tr>
     </table>
   </div>
-
 </body>
+
+</html>

@@ -1,6 +1,4 @@
-(dbg:begin "assert.lsp")
-
-(load-libs 'navi 'algo 'util 'tweak)
+(load-libs 'Navi 'Algo 'Util 'Tweak)
 
 (context 'assert)
 
@@ -167,7 +165,7 @@
                     (if (integer? errCode) errCode (eval errCode))
                     true))
 ;; Alt:
-;; (set (util:add-postfix-to-sym "_tweaked" 'assert)
+;; (set (Util:add-postfix-to-sym "_tweaked" 'assert)
 ;;      (lambda-macro (loc)
 ;;        (assert-exprs 'assert (args)
 ;;                      nil loc)))
@@ -215,7 +213,7 @@
 
 (define (show-pre-recursive funcSym)
   ;;(reset)
-  (let (ch (algo:convex-hull (list funcSym) util:calls-into-context))
+  (let (ch (Algo:convex-hull (list funcSym) Util:calls-into-context))
     (dolist (s ch)
             (let (sig (append (string s)
                               " "
@@ -225,7 +223,7 @@
               (map (fn (r)
                      (dbg:msg (format
                                 "    %s"
-                                (string (nth (navi:ref-parent r) (eval s))))))
+                                (string (nth (Navi:ref-parent r) (eval s))))))
                    (ref-all nil (eval s)
                             (fn (ignored s) (any-pre-sym? s))))
               (dbg:end (append " " (string s)))))))
@@ -235,10 +233,7 @@
 (setq initializePriority Init:prioHigh) ; tweak 'assert before others
 (define (initialize)
   (dbg:begin 'initialize)
-  (tweak:context MAIN:assert)
+  (Tweak:context MAIN:assert)
   (dbg:end 'initialize))
 
-
-(context MAIN)
-
-(dbg:end "assert.lsp")
+;;EOF

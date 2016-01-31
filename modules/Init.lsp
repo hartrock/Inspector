@@ -1,28 +1,34 @@
 ;; Standard init for scripts using libs.
 ;;
-(when (not Init_allowLoadOnce)
-  (let (msg "[Init.lsp][FATAL] Init_allowLoadOnce not set: accidentally tried to load twice?")
-    (write-line 2 msg)
-    (throw-error msg)))
-(delete 'Init_allowLoadOnce ; avoid accidentally loading twice
-        nil) ; unsafe delete should be safe here
-
-;;(println "lib/Init.lsp ...")  (sleep 3000)
-(map context '(Util Init MAIN))
 
 ;; only here this way: later in lib files (dbg:begin "something.lsp")
 (or Init:nodebug
     (write-line 2 "[Init.lsp..."))
 
 
+(context 'Init)
+
+(when extendedDone
+  (let (msg "[Init.lsp][ERROR] Init:extendedDone: accidentally tried to load twice.")
+    (write-line 2 msg)
+    (throw-error msg)))
+
+
+(context MAIN)
+
+(map context '(Util MAIN))
+
+(when (not Init:minimalDone)
+  (load (append Init:basedir "/modules/Init.minimal.lsp")))
+
 ;;
 ;; Loggers
 ;;
 
-(load (append Init:moduledir "/FOOPReference.lsp"))
-(load (append Init:moduledir "/Util.lsp")) ; minimal version for module deps
-(load (append Init:moduledir "/Logger.lsp"))
-(load (append Init:moduledir "/LoggerTweakable.lsp"))
+(load-module "FOOPReference.lsp")
+(load-module "Util.lsp") ; minimal version for module deps
+(load-module "Logger.lsp")
+(load-module "LoggerTweakable.lsp")
 
 ;;
 ;; default logger
@@ -35,19 +41,21 @@
 ;;
 ;; dbg: context
 
-;;(map context '(dbg MAIN)) ; mark dbg sym as context (and global)
+(when (context? dbg) ; avoid deleting dbg sym, but ..
+  (delete 'dbg)) ; .. delete dbg context from Init.minimal.lsp
+
 (set 'dbg (Logger 2 (fn () "[dbg]") Logger:level_all))
 (dbg:mixin-expr-debug)
 
 ;; has to overwrite non-nil syms from LoggerDebug, if put thereafter
 (Util:mixin-no-overwrite-with-nil LoggerTweakable dbg)
-(global 'dbg) ; avoid creation of context or local var in context during load
+(global 'dbg) ; avoid creation of context or local var in contexts during load
 
-;; Override 'on' default, but only, if explicitely said so.
-;(if Init:nodebug (dbg:off))
+;; Override 'on' default, but only then, if explicitely said so.
+(if Init:nodebug (dbg:off))
 
 
-;; for tweak.lsp
+;; for Tweak.lsp
 (context dbg)
 (set 'prefixedToBeTweakedStrs (map (curry append "dbg:") toBeTweakedStrs))
      ;;'prefixExprRegex (append "^(?:" (join prefixExprStrs "|") ")$")
@@ -62,8 +70,6 @@
   ;;(regex prefixExprCompiledRegex (string e) 0x10000)) ; .. so just in case
   ;;(regex prefixExprRegex (string e))) ; alt to the former
   ;;(find e exprSyms)) ; OLD: DNW with syms in Logger_* context, which dbg refs
-(context MAIN)
-
 
 
 (context Init)
@@ -83,30 +89,50 @@
 (setq tput_cols (exec "tput cols"))
 (if tput_cols (pretty-print (- (int (tput_cols 0)) 25)))
 
+
 (context MAIN)
 
 ;;
 ;; Libs...
 ;;
-(load (append Init:moduledir "/Libs.lsp"))
+
+(load-module "Libs.lsp")
+
+
+(context Init)
+
+;; Used by MAIN:load-module from Init.minimal.lsp.
+(define (load-module-extended name_str overwriteFlag
+                              , filePathLoaded)
+  (when (set 'filePath_loaded
+             (Libs:load-opt-overwrite
+              (append Init:moduledir "/" name_str)
+              overwriteFlag))
+    (push filePath_loaded Init:loadedModules)))
+
 
 (context MAIN)
 
-;; difficult to use, before scriptname issues are not solved
-;; (define (load-rel path) (load (append Init:scriptDir "/" path)))
+;; difficult to use, before scriptname issues are not solved:
+;;   (define (load-rel path) (load (append Init:scriptDir "/" path)))
 
-;; str args
+;; load funcs with str args
 (define (load~ rel_path_str)
   (load (append (env "HOME") "/" rel_path_str)))
-(define (load-module name_str overwriteFlag)
-  (Libs:module-opt-overwrite (append Init:moduledir "/" name_str)
-                             overwriteFlag))
+(define (load-once filePath)
+  (Libs:load-opt-overwrite filePath))
+;; load-module defined by Init.minimal.lsp
 
-;; sym args
+;; load lib funcs with sym args
 (define (load-libs)
   (Libs:load-libs (args)))
 (set 'load-lib load-libs) ; alias
 
+;; mem kind of init
+(set 'Init:extendedDone true)
+
 ;; only here this way: later in lib files (dbg:end "something.lsp")
 (or Init:nodebug
     (write-line 2 "...Init.lsp]"))
+
+;;EOF

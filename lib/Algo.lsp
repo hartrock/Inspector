@@ -1,6 +1,4 @@
-(dbg:begin "algo.lsp")
-
-(context 'algo)
+(context 'Algo)
 
 (define (together-with-neighbors elems neighborsFunc)
   ;; (dbg:expr elems)
@@ -19,10 +17,5 @@
          elems)
       (setq elems elemsWithNeighbors))) ; prepare next step
   elems) ; loop may not be entered
-;;
-;;
 
-
-(context MAIN)
-
-(dbg:end "algo.lsp")
+;;EOF

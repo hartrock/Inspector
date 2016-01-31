@@ -1,0 +1,128 @@
+html, body {
+/*
+    height: 100%;
+*/
+}
+body {
+    margin: 0;
+    /* background-color: white; */
+/*
+    position: relative;
+    display: flex;
+    flex-flow: column;
+*/
+}
+
+.CodeMirror {
+/*
+    height: 100%;
+*/
+    border: 1px solid #eee;
+/*    height: 50em; */
+}
+#wrapper_console .CodeMirror {
+/*
+    -webkit-box-sizing: border-box;
+       -moz-box-sizing: border-box;
+       box-sizing: border-box;
+    overflow:auto; height:400px;
+    display: flex;
+    position: relative;
+    flex-grow: 4;
+    height: 70%;
+*/
+    /*
+    height: 45em;
+    width: 50em;
+   */
+}
+
+.promptSingle {
+    background-color: yellow;
+}
+.promptUnfinished {
+    background-color: lightblue;
+}
+.promptError {
+    background-color: lightpink;
+}
+#wrapper_console.waitCursor {
+    cursor: wait;
+}
+#wrapper_console.waitCursor .CodeMirror-lines {
+    cursor: wait;
+}
+
+.sep {
+    height: auto;
+    width: auto;
+    /* background-color: rgba(255,255,0,0.5); */
+    /* background-color: yellow; */
+    background-color: #e0e0e0; /* grey */
+}
+
+#wrapper_log {
+}
+#wrapper_log .CodeMirror {
+    /* override */
+    background-color: #e0e0e0; /* grey */
+}
+#table_main {
+    /* dynamic dimensions */
+    /*
+    border-style: solid;
+    border-width: medium;
+    */
+    border-style: hidden;
+    border-collapse: collapse;
+}
+#aTable td, #aTable th {
+    border: 1px solid black;
+}
+#table_sep {
+    width: 100%;
+    /*
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    */
+}
+#table_sep td {
+    width: 33.33%;
+    text-align: center;
+}
+#td_sepAreaLeft span {
+}
+#td_sepAreaRight span {
+}
+#td_sepAreaMiddle {
+    background-color: #e0e0e0; /* grey */
+}
+
+#div_symbolsView {
+    overflow:auto;
+    height: 100px; /* set programmically: low number for adapting later */
+}
+
+
+/*
+ * interact.js for changing layout
+ */
+
+.resize-drag {
+/*
+  background-color: #29e;
+  color: white;
+  font-size: 20px;
+  font-family: sans-serif;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 30px 20px;
+
+  width: 120px;
+*/
+  /* This makes things *much* easier */
+/*
+  box-sizing: border-box;
+*/
+}

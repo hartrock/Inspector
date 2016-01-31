@@ -3,11 +3,14 @@
 ;; ; but this had to be made correct first...
 
 (load-libs 'assert 'FM)
+(module "crypto.lsp") ; websocket protocol
+
 (assert:pre (context? logg)) ; needs a logger logg
 
 (map context '(WS
                WS_A_Resource ; abstract FOOP class
-               WS_RStatic WS_RQueue WS_RCreator WS_REval ; FOOP classes
+               ;; instantiated FOOP classes
+               WS_RStatic WS_RQueue WS_RCreator WS_REval WS_RWebsocket
                MAIN))
 ;; Trees
 (new Tree 'WS_T_Resource)
@@ -97,7 +100,7 @@
 (:add-nodes fm_res '(
 ("START" handle_START) ;
 ("do_cond" "temporary state during migration to FM")
-("EXIT"  "exit state") ; do nothing
+("EXIT" handle_EXIT)
 
 ("compute_rprops"   handle_compute_rprops)
 ("check_debugMode" handle_check_debugMode)
@@ -140,6 +143,17 @@
     ("R_eval_POST" handle_notImplementedYet)   ; FAIL: op forbidden
     ("R_eval_unknown" handle__unknown)         ; FAIL: op unknown
 
+("R_websocket" "websocket resource")
+    ("websocket_protocolError" handle_websocket_protocolError)
+    ("R_websocket_GET" handle_websocket_GET)               ; OK  : upgrade req
+        ("websocket_upgrade" handle_websocket_upgrade)
+        ("websocket_do-protocol" handle_websocket_do-protocol_fork)
+    ("R_websocket_HEAD" handle_websocket_protocolError)    ; FAIL: op invalid
+    ("R_websocket_PUT" handle_websocket_protocolError)     ; FAIL: op invalid
+    ("R_websocket_DELETE" handle_websocket_protocolError)  ; FAIL: op invalid
+    ("R_websocket_POST" handle_websocket_protocolError)    ; FAIL: op invalid
+    ("R_websocket_unknown" handle_websocket_protocolError) ; FAIL: op unknown
+
 ("finalize" handle_finalize)
 
 ("R_test_1" test_1)
@@ -164,6 +178,7 @@
 (define (creator?))
 (define (queue?))
 (define (evaluator?))
+(define (websocket?))
 
 
 (context WS_RQueue)
@@ -254,6 +269,22 @@
 
 (define (evaluate)
   ((eval funSym) rname WS_headers_request))
+
+
+(context WS_RWebsocket)
+(new WS_A_Resource)
+
+(define (websocket?)
+  true)
+
+(define (WS_RWebsocket id fmCtx)
+  (list MAIN:WS_RWebsocket id fmCtx))
+
+(constant 's_id 1 's_fm 2)
+(define (id)
+  (self s_id))
+(define (fm)
+  (self s_fm))
 
 
 (context WS)
@@ -490,6 +521,9 @@
 (define (eval-resource? rname)
   (and (WS_T_Resource rname)
        (:evaluator? (WS_T_Resource rname))))
+(define (websocket-resource? rname)
+  (and (WS_T_Resource rname)
+       (:websocket? (WS_T_Resource rname))))
 
 (define (post-resource? rname)
   (or (queue-resource? rname)
@@ -526,6 +560,8 @@
   (WS_T_Resource rname (WS_RQueue rname MIMEtype queue_id operation)))
 (define (h_set-eval-resource rname funSym)
   (WS_T_Resource rname (WS_REval rname funSym)))
+(define (h_set-websocket-resource rname fmCtx)
+  (WS_T_Resource rname (WS_RWebsocket rname fmCtx)))
 
 ;;
 ;; WS API ..
@@ -588,6 +624,11 @@
   (assert:pre (nil? (WS_T_Resource rname)))
   (h_set-eval-resource rname funSym))
 
+;; websocket resource
+;;
+(define (create-websocket-resource rname fmCtx)
+  (assert:pre (nil? (WS_T_Resource rname))) ; should not exist
+  (h_set-websocket-resource rname fmCtx))
 
 ;;
 ;; .. WS API.
@@ -628,20 +669,33 @@
 (define (create-headers keyVal_pairs)
   (join (map (lambda (p) (create-header (first p) (last p))) keyVal_pairs)))
 
-(define (http-status-message errcode)
+(define (http-status-message statuscode)
   (append
-   (cond
-    ((= errcode 200) "200 OK")
-    ((= errcode 201) "201 Created")
-    ((= errcode 201) "204 No Content")
-    ((= errcode 404) "404 Not Found")
-    ((= errcode 405) "405 Method Not Allowed")
-    ((= errcode 500) "500 Internal Server Error")
-    ((= errcode 501) "501 Not Implemented")
-    ("default" (append "HTTP error code: " (string errcode)))
+   (case statuscode
+    (101 "101 Switching Protocols") ; websocket
+    (200 "200 OK")
+    (201 "201 Created")
+    (201 "204 No Content")
+    (404 "404 Not Found")
+    (405 "405 Method Not Allowed")
+    (500 "500 Internal Server Error")
+    (501 "501 Not Implemented")
+    (true (append "HTTP error code: " (string statuscode)))
     )
    "."))
-
+(define (websocket-status-message statuscode)
+  (case statuscode
+   (1000 "1000 normal closure")
+   (1001 "1001 going away")
+   (1002 "1002 protocol error")
+   ;;   (100 "100 ")
+   (1003 "1003 cannot accept type of data")
+   (1004 "1004 reserved")
+   (1005 "1005 no status code")
+   (1006 "1006 abnormal closure")
+   (1007 "1007 data not consistent with message type")
+   (true (append "Websocket error code: " (string statuscode)))
+   ))
 (define (handle_START fm)
   ;;(dbg:expr fm)
   ;; (:eval-curr-func fm_res) ; -> recursive evaluation not allowed.
@@ -686,8 +740,8 @@
 
 (define (handle__unknown)
   (set 'http_status 501
-       'str_content ("Unimplemented request method "
-                     (WS_Headers_request "method") "."))
+       'str_content (string "Unimplemented request method "
+                            (WS_Headers_request "method") "."))
   (fm:advance "finalize"))
 
 (define (handle_eval_GET fm ; access to FM with prev state and other info
@@ -709,13 +763,78 @@
           (set 'http_status 500)))
   (fm:advance "finalize")) ; advance to - special - EXIT state
 
+(constant 'c_wswsPrefix "[websocket] ")
+
+(define (handle_websocket_protocolError fm)
+  (set 'http_status 405
+       'str_content (string "Websocket protocol error: invalid request method "
+                            (WS_Headers_request "method") "."))
+  (fm:advance "finalize"))
+
+(define (handle_websocket_GET fm)
+  (cond
+   ((not (and
+          (= (WS_Headers_request "upgrade") "websocket")
+          (member "Upgrade" (parse (WS_Headers_request "connection") ", "))))
+    (fm:advance "websocket_protocolError"))
+   ("else"
+    (set 'key (WS_Headers_request "sec-websocket-key")
+         'ver (WS_Headers_request "sec-websocket-version"))
+    (cond
+     ((not (and key ver (= ver "13")))
+      (fm:advance "websocket_protocolError"))
+     ("else"
+      (fm:advance "websocket_upgrade"))))))
+
+(define (h_ws-key_be64->ws-accept_be64 key_be64)
+  (set 'keyPlus (append key_be64 "258EAFA5-E914-47DA-95CA-C5AB0DC85B11")
+       'hash (crypto:sha1 keyPlus true)
+       'hash_be64 (base64-enc hash))
+  ;; example from http://tools.ietf.org/html/rfc6455#section-4.2.2 :
+  ;; (WS:h_ws-key_be64->ws-accept_be64 "dGhlIHNhbXBsZSBub25jZQ==")
+  (when nil
+    (dbg:expr key_be64)
+    (dbg:expr key)
+    (dbg:expr keyPlus)
+    (dbg:expr hash hash_be64))
+  hash_be64)
+(define (ws-key_be64->ws-accept_be64)
+  (h_ws-key_be64->ws-accept_be64 (WS_Headers_request "sec-websocket-key")))
+
+(define (handle_websocket_upgrade fm)
+  (set 'http_status 101
+       'accept_be64 (ws-key_be64->ws-accept_be64)
+       'http_extra_header_str
+       (append
+        (create-headers
+         '(("upgrade" "websocket")
+           ("connection" "upgrade")))
+        (create-header "Sec-WebSocket-Accept" accept_be64)))
+  (h_handle_finalize)
+  ;;(dbg:expr conn)
+  (send-response conn) ; conn 'global'
+  (fm:advance "websocket_do-protocol"))
+
+(define (handle_websocket_do-protocol fm)
+  (set 'fm_ws (:fm (WS_T_Resource rname))
+       'fm_ws:conn conn)
+  ;;(dbg:expr WS:fm_echo WebsocketFM:fm_echo)
+  ;;(dbg:expr (= WS:fm_echo WebsocketFM:fm_echo))
+  (fm_ws:START)
+  (fm:advance "EXIT"))
+(define (handle_websocket_do-protocol_fork fm)
+  (set 'pid (fork (handle_websocket_do-protocol fm)))
+  (dbg:expr pid)
+  (fm:advance "EXIT"
+              true)) ; hasBeenForked
+
 
 (define (handle_compute_rprops fm)
   ;; (set 'tmp (WS_Headers_request "url")) ; for debugging
   (let (localname_and_params
         ;; (debug (URL-to-localname-and-params tmp))) ; for debugging
         (URL-to-localname-and-params (WS_Headers_request "url")))
-    ;(dbg:expr localname_and_params)
+    ;;(dbg:expr localname_and_params)
     (set 'rname (localname_and_params 0)
          'rparams (localname_and_params 1)))
   (fm:advance "check_debugMode"))
@@ -750,6 +869,8 @@
     (extend node "_queue"))
    ((eval-resource? rname)
     (extend node "_eval"))
+   ((websocket-resource? rname)
+    (extend node "_websocket"))
    ("default"
     (extend node "_unknown")))
   (fm:advance node) ; informational
@@ -834,7 +955,6 @@
            (if fit
                (pop (WS_T_Queue queue_id)) ; standard pop (efficient)
                (em-cpop (WS_T_Queue queue_id) -1))) ; non-standard pop, emacro
-      ;(dbg:expr popped )
       (if popped
           (set 'http_status 200
                'str_content (popped 0)
@@ -904,8 +1024,8 @@
        (create-headers (http_extra_response_headers_hook))
        "")
    (create-end-header)))
-;;
-(define (handle_finalize fm)
+;; for reuse by handle_websocket_upgrade
+(define (h_handle_finalize fm)
   (when (and http_status (>= http_status 300))
     ((if (>= http_status 500)
          logg:error
@@ -918,11 +1038,14 @@
   (set 'str_head (response-header-str
                   http_status http_extra_header_str
                   str_content MIMEtype))
-  (set 'string_response (append str_head (or str_content "")))
+  (set 'string_response (append str_head (or str_content ""))))
   ;;(dbg:expr-sep string_response)
   ;;(dbg:expr (length str_content) (length string_response))
+(define (handle_finalize fm)
+  (h_handle_finalize)
   (fm:advance "EXIT"))
-
+(define (handle_EXIT fm hasBeenForked)
+  hasBeenForked)
 ;; fm_res FM loop
 (define (compute-response
          ,
@@ -930,26 +1053,27 @@
          rparams ; URL params
          http_status str_content MIMEtype
          str_head)
-  (fm_res:advance "START")
-  (fm_res:loop)
-  ) ;(dbg:expr str_content))
+  (fm_res:START))
 
 
 
 (define (send-response conn
                        , num_sent)
+  ;;(dbg:expr string_response)
   (setq num_sent (net-send conn string_response))
   (logg:msg-loc 'send-response "num_sent: " num_sent)
-)
+  (if (nil? num_sent) ;todo: cleanup after net-error
+      (logg:error (net-error))))
 
 (define (listening-info)
   (if listening-info-string
       (logg:info "\n" listening-info-string)))
 
-(define (server_simple)
+(define (server_loop)
   (local
       (curr funOrNil listen conn
        failure conn continue string_response
+       hasBeenForked
        buf_len
        continue)
     (set 'continue true)
@@ -1000,8 +1124,9 @@
         (:advance fm_main "cleanup_after_request_error"))
 
        ((= curr "compute_response")
-        (compute-response)
-        (:advance fm_main "send_response"))
+        (if (set 'hasBeenForked (compute-response))
+            (:advance fm_main "cleanup_after_request") ; response delegated
+            (:advance fm_main "send_response"))) ; responsible for response
 
        ((= curr "send_response")
         (send-response conn)
@@ -1033,7 +1158,7 @@
   (set 'server_port serverPort)
   (init)
   (:advance fm_main "start")
-  (server_simple))
+  (server_loop))
 
 
 ;; ..WS

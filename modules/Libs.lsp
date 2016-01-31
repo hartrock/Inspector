@@ -5,23 +5,25 @@
   (exit 1))
 
 (set 'Libs:log Logger:default)
-
-(push (Logger:scriptpath) loaded)
+(set 'Init:libdir (append Init:basedir "/lib"))
+(push (Logger:scriptpath) Init:loaded)
 (push (Logger:scriptpath) loadStack)
 
 (define (~/-to-homedir path_str)
   (replace "^~(?=/)" path_str (env "HOME") 0))
 
-(define (module-opt-overwrite modulePath overwriteFlag)
-  (log:begin "module-opt-overwrite")
-  ;;& (dbg:expr modulePath overwriteFlag)
+(define (load-opt-overwrite filePath overwriteFlag
+                            , res)
+  (log:begin "load-opt-overwrite")
+  ;;& (dbg:expr filePath overwriteFlag)
   ;;& (dbg:expr logg)
-  (let (alreadyLoaded (find modulePath (or loaded '())))
+  (let ((alreadyLoaded (find filePath Init:loaded))
+        (res))
     ((if (and alreadyLoaded (not overwriteFlag))
          log:warn-loc
          log:info-loc)
-     'module-opt-overwrite
-     "\"" modulePath "\" "
+     'load-opt-overwrite
+     "\"" filePath "\" "
      (if alreadyLoaded
          (if overwriteFlag
              "to be loaded again (overwrite)"
@@ -30,12 +32,14 @@
      ".") ; normal case
     (if (or (not alreadyLoaded) overwriteFlag)
         (begin
-          (push modulePath loaded)
-          (push (cons (first loadStack) modulePath) loadDeps)
-          (push modulePath loadStack)
-          (load (~/-to-homedir modulePath))
-          (pop loadStack))))
-  (log:end "module-opt-overwrite"))
+          (push (cons (first loadStack) filePath) loadDeps)
+          (push filePath loadStack)
+          (load (~/-to-homedir filePath))
+          (pop loadStack)
+          (push filePath Init:loaded)
+          (set 'res filePath))))
+  (log:end "load-opt-overwrite")
+  res)
 
 (define (string-with-prefix symbol)
   (Util:sym-string symbol))
@@ -56,8 +60,8 @@
         (begin
           (push ctxSym libsLoadedCurr -1)
           (push ctxSym libsLoaded -1)
-          (module-opt-overwrite (append Init:libdir "/" (string ctxSym) ".lsp")
-                                overwriteFlag))))
+          (load-opt-overwrite (append Init:libdir "/" (string ctxSym) ".lsp")
+                              overwriteFlag))))
   (-- loadLibDepth))
 
 (setq prioHighest 5
@@ -142,4 +146,4 @@
   (log:expr libsLoadedCurr libsLoaded libsSometimesSkipped)
   (log:end "load-libs"))
 
-(context MAIN)
+;;EOF

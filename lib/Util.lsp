@@ -1,13 +1,13 @@
-(dbg:begin "util.lsp")
-
 (load-libs 'assert)
+(load-module "Util.lsp")
 
-(context 'util)
+
+(context Util)
 
 (define (detect-ifAbsent k l
                          (fun (fn (k e) (dbg:expr k e) (= k e)))
                          (ifAbsentFunOrNil nil))
-  (dbg:expr k l)
+  ;;(dbg:expr k l)
   (if (list? l)
       (let (r (ref k l fun))
         (if (nil? r)
@@ -19,27 +19,14 @@
   (expand (fn (x) (f_o (f_i x))) 'f_o 'f_i))
 
 (define (any-satisfy l pred)
-  (dbg:expr l pred)
-  (dbg:expr (null? l))
+  ;;(dbg:expr l pred)
+  ;;(dbg:expr (null? l))
   (not (not (find nil l (fn (k_ignored e) (pred e)))))) ; enforce true or nil
 
 (define (all-satisfy l pred )
   (or (null? l)
       (not (any-satisfy l (compose not pred)))))
  
-
-;;;; pos in vec
-
-(define (in-range vec pos (lenFunc length))
-  (let (len (lenFunc vec))
-  (and (< pos len)
-       (<= (- pos) len))))
-
-;; elem at pos inside vec with lenFunc, or eval of fun, if out of range
-(define (at-ifAbsent vec pos (lenFunc length) (ifAbsentFuncOrNil nil))
-  (if (in-range vec pos lenFunc)
-      (vec pos)
-      (if ifAbsentFuncOrNil (ifAbsentFuncOrNil))))
 
 
 ;;;; code creation
@@ -109,9 +96,6 @@
 (define (curry-between listBefore (listAfter '()))
   (let (res (fn ($x)))
     (push (extend listBefore (push '$x listAfter)) res -1)))
-;; ((Util:curry-between '(: logg:expr) '("foo" "bar")) logg:cerr)
-;; (apply (Util:curry-between '(: logg:expr) '("foo" "bar")) (list logg:cerr))
-;; (map (Util:curry-between '(: logg:expr) '("foo" "bar")) (list logg:cerr))
 
 (define (callable? symbol)
   (let (val (eval symbol))
@@ -131,7 +115,4 @@
                 (< (find x l) (find y l))
                 (comparePred xVal yVal))))))
 
-
-(context MAIN)
-
-(dbg:end "util.lsp")
+;;EOF

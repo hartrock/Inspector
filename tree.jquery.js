@@ -507,7 +507,7 @@ ElementsRenderer = (function() {
     this.attachNodeData(node, li);
     $previous_li.after(li);
     $previous_li.remove();
-    if (node.children) {
+    if (node.children && node.children.length) {
       return this.createDomElements(li, node.children, false, false);
     }
   };
@@ -554,9 +554,13 @@ ElementsRenderer = (function() {
   // rerendered.
   ElementsRenderer.prototype.createLi = function(node) {
     var li;
-    // [sr] caching for static content, ..
+    // [sr][hack] caching for static content, ..
     if (node.cachedLi) {
-      return node.cachedLi;
+      if (node.cacheLiFlag) {
+        return node.cachedLi;
+      } else {
+        node.cachedLi = null;
+      }
     }
     if (node.isFolder()) {
       li = this.createFolderLi(node);
@@ -566,7 +570,7 @@ ElementsRenderer = (function() {
     if (this.tree_widget.options.onCreateLi) {
       this.tree_widget.options.onCreateLi(node, $(li));
     }
-    // [sr] .. controlled by node.cacheLiFlag
+    // [sr][hack] .. controlled by node.cacheLiFlag
     if (node.cacheLiFlag) {
       node.cachedLi = li;
     }

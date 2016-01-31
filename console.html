@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Remote Inspector</title>
+
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+
+    <!-- Create a simple CodeMirror instance -->
+    <link rel="stylesheet" href="CodeMirror-5.7.0/lib/codemirror.css">
+    <script src="CodeMirror-5.7.0/lib/codemirror.js"></script>
+    <script src="CodeMirror-5.7.0/mode/scheme/scheme.js"></script>
+    <script src="jquery-2.1.4.js"></script>
+
+    <script src="tree.jquery.js"></script>
+    <link rel="stylesheet" href="jqtree.css" />
+
+    <link rel="stylesheet" href="inspector.css">
+    <link rel="stylesheet" href="console.css">
+    <script src="egBase.js" charset="utf-8"></script>
+    <script src="symbolsTree.js" charset="utf-8"></script>
+    <script src="console.js"></script>
+    <script> 
+      $(function(){/* todo: rename file */
+        $("#div_treeHelp_common").load("tree_help_common.html.inc"); 
+      });
+    </script>
+    <script src="interact.js" charset="utf-8"></script>
+  </head>
+  <body id="strong">
+    <table id="table_main">
+      <tr id="tr_top">
+        <td id="wrapper_console" class="colLeft">
+          <textarea id="console"></textarea>
+        </td>
+        <td class="colRight">
+          <div id="div_symbolsView">
+            <div id="div_tree"></div>
+            <div id="div_treeHelp">
+              <div id="div_treeHelp_common"></div>
+            </div>
+          </div>
+        </td>
+      </tr>
+      <tr id="tr_sep"> <!-- one row with one cell with one table -->
+        <td id="td_sep" colspan="3"> <!-- one cell with table -->
+          <table id="table_sep" class="sep">
+            <tr>
+              <td id="td_sepAreaLeft">
+                <span>
+                  ↑ stdout remote      ↓ stderr remote
+                </span>
+              </td>
+              <td id="td_sepAreaMiddle">
+                <input type="text"
+                       id="remoteArguments"
+                       title="*Additional* remote startup arguments (some arguments needed are always there - like -C for prompt and some libs for introspection)."
+                       value="helloWorld.lsp"></input>
+                <select id="actionMenu" title="select remote control action">
+                  <option hidden title="action menu">remote control </option>
+                  <option title="start remote with arguments">
+                    start remote
+                  </option>
+                  <option title="kill with signal 15">kill soft</option>
+                  <option title="kill with signal 9">kill hard</option>
+                </select>
+                <select id="navigationMenu" title="go to...">
+                  <option hidden title="navigation menu">navigation </option>
+                  <option>symbols.html</option>
+                  <option>symbols-JSON</option>
+                </select>
+                <!-- if there should be a button later: -->
+                <!--
+                    <button title="trigger selected remote control action" id="actionButton">doIt</button>
+                    -->
+              </td>
+              <td id="td_sepAreaRight">
+                <span>
+                  ↑ symbols remote      ↓ log Inspector
+                </span>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr id="tr_bottom">
+        <td id="td_stderr" class="colLeft">
+          <textarea id="stderr"></textarea>
+        </td>
+        <td id="wrapper_log" class="colRight">
+          <textarea id="log"></textarea>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

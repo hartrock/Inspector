@@ -1,16 +1,15 @@
-(dbg:begin "navi.lsp")
+(load-libs 'assert 'Util)
 
-(load-libs 'assert 'util)
 
-(context navi)
+(context Navi)
 
 ;; valid ref? Checks for having integer elements only in list.
 ;; Preconditions: none.
 (define (ref? r)
   (and (list? r)
        ;(all-satisfy r (fn (e) (integer? e)))))
-       (dbg:expr util)
-       (util:all-satisfy r integer?)))
+       (dbg:expr Util)
+       (Util:all-satisfy r integer?)))
 
 ;; Valid list ref?
 ;; Checks, if r is a valid ref into list l.
@@ -86,7 +85,7 @@
 (define (dopath-from-or-to-root sym_path_breakOrNil body funcSym)
   ;;(dbg:expr sym_path_breakOrNil (length sym_path_breakOrNil))
   ;;(dbg:expr util)
-  (eval (util:create-dolist (sym_path_breakOrNil 0) ; sym
+  (eval (Util:create-dolist (sym_path_breakOrNil 0) ; sym
                             (list funcSym (sym_path_breakOrNil 1)) ; list
                             (if (>= (length sym_path_breakOrNil) 3)
                                 (sym_path_breakOrNil 2)) ; break cond
@@ -198,10 +197,7 @@
 
 (define (initialize)
   (dbg:begin 'initialize)
-  (tweak:context navi)
+  (Tweak:context Navi)
   (dbg:end 'initialize))
 
-
-(context MAIN)
-
-(dbg:end "navi.lsp")
+;;EOF

@@ -1,9 +1,7 @@
-(dbg:begin "tweak.lsp")
-
 (load-libs 'assert)
 
 
-(context 'tweak)
+(context 'Tweak)
 
 (setq localExprSyms
       (list (sym "args" MAIN)
@@ -160,11 +158,11 @@
 ;; iface: tweak assert's and dbg:expr's in contexts
 ;;
 
-(define (tweak:context ctx (symsFromContexts '(assert dbg)))
+(define (Tweak:context ctx (symsFromContexts '(assert dbg)))
   (context-symsFromContexts ctx symsFromContexts)
   (push ctx tweaked -1))
 
-(define (tweak:context? ctx)
+(define (Tweak:context? ctx)
   (and tweaked (find ctx tweaked)))
 
 
@@ -173,10 +171,7 @@
 (define (initialize)
   (dbg:begin 'initialize)
   (dbg:msg-loc 'initialize
-                "nothing to tweak") ; (tweak:context MAIN:tweak)
+                "nothing to tweak") ; (Tweak:context MAIN:Tweak)
   (dbg:end 'initialize))
 
-
-(MAIN:context MAIN)
-
-(dbg:end "tweak.lsp")
+;;EOF
