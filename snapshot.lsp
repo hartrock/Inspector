@@ -1,5 +1,5 @@
 #!/usr/bin/env newlisp
-(load "modules/Util.lsp")
+(load "modules/Init.minimal.lsp")
 (load "modules/Introspection.lsp")
 
 ;; make snapshot
