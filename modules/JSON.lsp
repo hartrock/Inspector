@@ -1,8 +1,7 @@
 (load-module "UTF8.lsp")
 
-(context 'JSON)
 
-(set 'develFlag true)
+(context 'JSON)
 
 ;; Purpose:
 ;; Create JSON from newLISP data consisting of 'basic' types having an
@@ -317,118 +316,6 @@
         quoted)))
 
 
-(context MAIN)
-(set 'Util:foo1 JSON)
-(set 'Util:foo2 MAIN)
-(set 'Util:MAIN MAIN)
-
-(new Tree 'JSON_HM)
-(new Tree 'A_Tree)
-
-(set 'v_MAIN->nil  nil
-     'v_MAIN->MAIN MAIN
-     'v_MAIN->Util Util)
-(define (dbg-vars_MAIN)
-  (dbg:expr v_MAIN->nil v_MAIN->MAIN v_MAIN->Util))
-(define (set_fun_a)
-  (set 's1 nil)
-  (A_Tree "fun_a" (lambda () (dbg:expr 's1:bar)(println s1:bar))))
-(when JSON:develFlag
-  (set 's1 Util)
-  (A_Tree "\127"  "-> \\127")
-  (A_Tree "\\127" "-> \\\\127")
-  (A_Tree "\128"  (lambda () "a) -> \\128"))
-  (A_Tree "\\128" "b) -> \\\\128")
-  (A_Tree "2.\128" (lambda () (println "b) -> \\\\128")))
-  (A_Tree "üä\128öÄ" "buz")
-  (set_fun_a)
-  )
-(context A_Tree)
-(set 'v_A_Tree->nil  nil
-     'v_A_Tree->A_Tree MAIN:A_Tree
-     'v_A_Tree->MAIN MAIN
-     'v_A_Tree->Util Util)
-(define (dbg-vars)
-  (dbg:expr-sep v_A_Tree->nil v_A_Tree->MAIN v_A_Tree->Util)
-  )
-(define (dbg-target)
-  (dbg:expr-sep v_A_Tree->nil:tterm v_A_Tree->MAIN:tterm v_A_Tree->Util:tterm)
-  (dbg:expr-sep v_MAIN->nil:tterm v_MAIN->MAIN:tterm v_MAIN->Util:tterm)
-  )
-(define (pts-var)
-  (dbg:expr-sep
-   (map Util:prefix-term-strings
-        '(v_A_Tree->nil v_A_Tree->A_Tree v_A_Tree->MAIN v_A_Tree->Util)))
-  ;; (dbg:expr-sep
-  ;;  (map Util:prefix-term-strings
-  ;;       '(v_MAIN->nil v_MAIN->MAIN v_MAIN->Util)))
-  )
-(define (pts-target)
-  (dbg:expr-sep
-   (map Util:prefix-term-strings
-        '(v_A_Tree->nil:tterm v_A_Tree->A_Tree:tterm v_A_Tree->MAIN:tterm v_A_Tree->Util:tterm)))
-  (dbg:expr-sep
-   (map Util:prefix-term-strings
-        '(v_MAIN->nil:tterm v_MAIN->MAIN:tterm v_MAIN->Util:tterm)))
-  )
-(define (set_fun_a2)
-  (set 's1 Util)
-  (MAIN:A_Tree "fun_a2" (lambda () (dbg:expr 's1:bar)(println s1:bar))))
-(define (set_fun_b)
-  (set 's2 Util)
-  (MAIN:A_Tree "fun_b" (lambda () (dbg:expr 's2:bar)(println s2:bar))))
-(when JSON:develFlag
-  (set_fun_a2)
-  (set_fun_b)
-  )
-  ;(set 'A_Tree:sy Util)
-  ;(A_Tree "fun2" (lambda () (println sy:bar)))
-(context MAIN)
-(when JSON:develFlag
-  (A_Tree "fun2" (fn () (println syc:bur)(dump syc:bur)))
-  )
-;; for testing nasty (legal?) symbols
-;;todo: introduce "legal" prop for Introspection
-(context JSON)
-(when develFlag
-  (JSON_HM "\\"   "\\\\")
-  (JSON_HM "\000" "\\\\000")
-  (JSON_HM "\001" "\\\\001")
-  (JSON_HM "\002" "\\\\002")
-  (JSON_HM "\003" "\\\\003")
-  (JSON_HM "\004" "\\\\004")
-  (JSON_HM "\005" "\\\\005")
-  (JSON_HM "\006" "\\\\006")
-  (JSON_HM "\007" "\\\\007")
-  (JSON_HM "\b"   "\\\\b")
-  (JSON_HM "\t"   "\\\\t")
-  (JSON_HM "\n"   "\\\\n")
-  (JSON_HM "\011" "\\\\011") ; \v
-  (JSON_HM "\f"   "\\\\f")
-  (JSON_HM "\r"   "\\\\r")
-  (JSON_HM "\014" "\\\\014")
-  (JSON_HM "\015" "\\\\015")
-  (JSON_HM "\016" "\\\\016")
-  (JSON_HM "\017" "\\\\017")
-  (JSON_HM "\018" "\\\\018")
-  (JSON_HM "\019" "\\\\019")
-  (JSON_HM "\020" "\\\\020")
-  (JSON_HM "\021" "\\\\021")
-  (JSON_HM "\022" "\\\\022")
-  (JSON_HM "\023" "\\\\023")
-  (JSON_HM "\024" "\\\\024")
-  (JSON_HM "\025" "\\\\025")
-  (JSON_HM "\026" "\\\\026")
-  (JSON_HM "\027" "\\\\027")
-  (JSON_HM "\028" "\\\\028")
-  (JSON_HM "\029" "\\\\029")
-  (JSON_HM "\030" "\\\\030")
-  (JSON_HM "\031" "\\\\031")
-  ;;
-  (JSON_HM "\"" "\\\\\"")
-  (JSON_HM "\127" "\\\\127")
-  (JSON_HM "\128" "\\\\128"))
-
 ;; Note: hasn't led to speedup
 ;; (define (string-quote_? str)
 ;;   (replace
@@ -634,5 +521,4 @@
 ;; lambda | macro   -> invalid
 ;; list             -> invalid, if not <obj> list
 
-(context MAIN)
 ;; EOF

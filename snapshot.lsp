@@ -1,6 +1,6 @@
 #!/usr/bin/env newlisp
-(load "modules/Init.minimal.lsp")
-(load "modules/Introspection.lsp")
+(or (context? Init) (load "modules/Init.minimal.lsp"))
+(or (context? Introspection) (load-module "Introspection.lsp"))
 
 ;; make snapshot
 (set 'filepath "/tmp/snapshot.json")
