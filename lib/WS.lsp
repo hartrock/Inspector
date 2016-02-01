@@ -49,25 +49,13 @@
   (val-or-nil "content-type" List_or_context))
 
 
-;; testing
-
-(define (foo)
-  (println "I'm the function foo!"))
-(define (call-sm-func key)
-  ((eval ((sm key) 1))))
-[text]
-(call-sm-func "R_test")
-[/text]
-
 
 ;;
-;; state machine
+;; flow machine
 ;;
 
 (set 'fm_main (FM))
-;;(debug (foo))
 
-;(fm:add-nodes '(
 (:add-nodes fm_main '(
    ("start"  "start")
 
@@ -96,10 +84,9 @@
 ))
 
 (set 'fm_res (FM))
-;; request handling states
+;; request handling flows
 (:add-nodes fm_res '(
 ("START" handle_START) ;
-("do_cond" "temporary state during migration to FM")
 ("EXIT" handle_EXIT)
 
 ("compute_rprops"   handle_compute_rprops)
@@ -156,19 +143,12 @@
 
 ("finalize" handle_finalize)
 
-("R_test_1" test_1)
-("R_test_2" ("R_test_2 (devel)" test_2))
-("R_test_3" (test_3))
 )) ; ..:add-nodes fm_res
-
-
-;(Resource "debug" true)
 
 
 (context MAIN)
 
 (new Class 'WS_A_Resource) ; good for overwrite of default functor
-;(map context '(WS_A_Resource WS_RQueue WS_RStatic MAIN))
 
 
 (context WS_A_Resource)
@@ -711,8 +691,8 @@
 )
 
 (define (handle_static_GET
-         fm         ; access to FM with prev state and other info
-         dataOrNil) ; input from previous state
+         fm         ; access to FM with prev flow and other info
+         dataOrNil) ; input from previous flow
   (let (content (last (get-static-resource rname)))
     (if (not content)
         (set 'http_status 404
@@ -720,8 +700,8 @@
         (set 'http_status 200
              'str_content content
              'MIMEtype (static-resource-MIMEtype rname))))
-  (fm:advance "finalize" ; advance to - special - EXIT state
-              nil))  ; no input data for next state
+  (fm:advance "finalize" ; advance to - special - EXIT flow
+              nil))  ; no input data for next flow
 
 (define (handle_static_DELETE fm)
   (delete-static-resource rname)
@@ -744,7 +724,7 @@
                             (WS_Headers_request "method") "."))
   (fm:advance "finalize"))
 
-(define (handle_eval_GET fm ; access to FM with prev state and other info
+(define (handle_eval_GET fm ; access to FM with prev flow and other info
                          , funSym evaluation)
   ;;(dbg:expr (get-eval-resource rname))
   (set 'funSym (:funSym (WS_T_Resource rname)))
@@ -761,7 +741,7 @@
                      (set
                       'http_status 500)))
           (set 'http_status 500)))
-  (fm:advance "finalize")) ; advance to - special - EXIT state
+  (fm:advance "finalize")) ; advance to - special - EXIT flow
 
 (constant 'c_wswsPrefix "[websocket] ")
 
@@ -1146,7 +1126,7 @@
           (close listen)
           (set 'listen nil)))
        ("default"
-        (logg:fatal "Unknown state " curr ": exiting.")
+        (logg:fatal "Unknown flow " curr ": exiting.")
         (exit 1))
        ) ; cond
       ) ; (while
