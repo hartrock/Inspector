@@ -31,31 +31,29 @@
 (define (create-test-info)
   (format "(%d: %+d -%d)" (+ testOK testFail) testOK testFail))
 (define (result-action msg failFlag testFlag loc)
-  (let (testInfo
-        (if testFlag  nil))
-    (if failFlag
-        (begin
-          (++ failureCount)
-          (if testFlag
-              (begin
-                (++ testFail)
-                (print msg) ; NL below
-                (println
-                 ;;(if testVerbose (format "-----> %s\n" (string result)) "")
-                 (format "%s
+  (if failFlag
+      (begin
+        (++ failureCount)
+        (if testFlag
+            (begin
+              (++ testFail)
+              (print msg) ; NL below
+              (println
+               ;;(if testVerbose (format "-----> %s\n" (string result)) "")
+               (format "%s
 >>>>> -------- <<<<<
 >>>>> Failure! <<<<< %s
 >>>>> -------- <<<<<"
-                         (test-prefix loc) (create-test-info))))
-              (throw-error msg)))
-        (begin
-          (++ successCount)
-          (if testFlag
-              (begin
-                (++ testOK)
-                (println msg)
-                (println (test-prefix loc) "--> OK " (create-test-info))))))
-    (not failFlag)))
+                       (test-prefix loc) (create-test-info))))
+            (throw-error msg)))
+      (begin
+        (++ successCount)
+        (if testFlag
+            (begin
+              (++ testOK)
+              (println msg)
+              (println (test-prefix loc) "--> OK " (create-test-info))))))
+  (not failFlag))
 ;;
 (define (assert-empty-warning loc)
   (dbg:warn (format "%s with no expressions to be applied to: ignored %s"
@@ -164,11 +162,6 @@
   (assert-exprs_ERR 'testERR (args)
                     (if (integer? errCode) errCode (eval errCode))
                     true))
-;; Alt:
-;; (set (Util:add-postfix-to-sym "_tweaked" 'assert)
-;;      (lambda-macro (loc)
-;;        (assert-exprs 'assert (args)
-;;                      nil loc)))
 (define-macro (assert_tweaked loc)
   (assert-exprs 'assert (args)
                 nil loc))

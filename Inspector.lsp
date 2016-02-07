@@ -5,17 +5,19 @@
 
 
 (context 'Inspector)
+
 (set 'help
+     (string
 [text]Inspector to be started from interpreter by:
   (Inspector:start)
 , and left from browser by loading:
-  http://localhost:8080/leave
-, or used in ping-pong mode via:
-  http://localhost:8080/symbols.html?pingPong
+  http://localhost:[/text]
+WS:server_port
+[text]/leave
 .
 You can jump to a symbol by using its anchor; e.g. for jumping to MAIN:MAIN use:
   http://localhost:8080/symbols.html#MAIN:MAIN
-.[/text])
+.[/text]))
 
 (define (render-symbols rname requestHeaders)
   (cons (symbols MAIN) "text/plain"))

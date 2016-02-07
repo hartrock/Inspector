@@ -3,7 +3,7 @@
 (context 'Init)
 (cond
  ((not Init:Init) ; guard
-  (set 'nodebug nil) ; nil for more debug messages
+  (set 'nodebug true) ; nil for more debug messages
   ;; script dir detection
   (set 'appscript "startIt.lsp"
        'appdir ; be robust against CLI args not being appscript
@@ -47,11 +47,12 @@
 
 (println ">>>>>>>>>>>>>>>>>>>>>")
 (println "You could load\n"
-         "  http://localhost:8080/symbols.html\n"
-         "now, and look for Inspector's symbols.")
+         "  http://localhost:" (or WS:server_port "8080") "/inspector.html"
+            "#MAIN:hello-world\n"
+         "now, and look for symbols of a remotely started newLISP instance.")
 (println "<<<<<<<<<<<<<<<<<<<<<")
 
-;; for seeing more, if started by another remote formerly started
+;; for seeing more, if started by another remote formerly started:
 ;;   (logg:level-all)
 (Inspector:start)
 
