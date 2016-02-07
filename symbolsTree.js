@@ -1009,17 +1009,18 @@ var Inspector = Inspector || {};
     return toBeUpdatedDynsyms;
   }
   
-  function updateSymbolsViewAction(data) {
+  function updateSymbolsViewAction(dataOrNil) { // dataOrNil may be undefined
     renderCount = 0;
-    console.log(data);
+    //console.log(dataOrNil);
     listFolderSym2Childs = {};
-    for (var lsid in data) { // data undefined, if no changed list folder syms
-      listFolderSym2Childs[lsid] = data[lsid].map(handle_sidOrDynsym);
+    // dataOrNil undefined, if no changed list folder syms -> no loop
+    for (var lsid in dataOrNil) {
+      listFolderSym2Childs[lsid] = dataOrNil[lsid].map(handle_sidOrDynsym);
     };
     toBeUpdatedDynsyms = compute_toBeUpdatedDynsyms(known_dsids, modified);
     is.log_info("\n  to be updated dynamic symbols: "
                 + JSON.stringify(eg.keys(toBeUpdatedDynsyms)));
-    //console.log("listFolderSym2Childs:", data);
+    //console.log("listFolderSym2Childs:", dataOrNil);
     removedSyms.sort(cmp_symInMAIN_before).forEach(function(sid, ix) {
       removeNodesFor(sid);
       delete symsMap[sid];

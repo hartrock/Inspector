@@ -289,7 +289,7 @@
   (set 'gottenPIDs '()
        'gottenCodes '())
   (dbg:begin "set-sigCHLD-behavior")
-  (dbg:expr-loc 'set-sigCHLD-behavior fm)
+  ;;(dbg:expr-loc 'set-sigCHLD-behavior fm)
   (map set '(fm:in_selfPipeSIGCHLD fm:out_selfPipeSIGCHLD) (pipe))  
   (set-sighandler)
   (dbg:end "set-sigCHLD-behavior"))
@@ -301,10 +301,12 @@
   (map set '(fm:i<-r_meta fm:r_meta->i) (pipe))
   (set 'fm:i<-r_all (list fm:i<-r_out fm:i<-r_err fm:i<-r_introspection
                           fm:i<-r_meta))
-  (dbg:expr fm:i_out->r
-            fm:i<-r_out fm:i<-r_err fm:i<-r_introspection fm:i<-r_meta)
-  (dbg:expr fm:r<-i_out
-            fm:r_out->i fm:r_err->i fm:r_introspection->i fm:r_meta->i)
+  (dbg:expr-loc 'start-remoteInterpreter
+                fm:i_out->r
+                fm:i<-r_out fm:i<-r_err fm:i<-r_introspection fm:i<-r_meta)
+  (dbg:expr-loc 'start-remoteInterpreter
+                fm:r<-i_out
+                fm:r_out->i fm:r_err->i fm:r_introspection->i fm:r_meta->i)
   ;; [todo] robustness: compute full path name
   (set 'fm:remote_commandStr
        (append
@@ -332,7 +334,12 @@
 (constant 'c_bufSize (* 1024 64) ; 128 is too small, 64k seems to be standard
           'c_bufSize_meta 32
           'c_debuggerPrompt "s|tep n|ext c|ont q|uit > "
-          'c_len_debuggerPrompt (length c_debuggerPrompt))
+          'c_debuggerPrompt$ (append c_debuggerPrompt "$")
+          'c_interruptPrompt "(c)ontinue, (d)ebug, e(x)it, (r)eset:"
+          'c_interruptPrompt$ (append c_interruptPrompt "$")
+          'c_len_debuggerPrompt (length c_debuggerPrompt)
+          'c_len_interruptPrompt (length c_interruptPrompt)
+          'c_maxlen_prompt (max c_len_debuggerPrompt c_len_interruptPrompt))
 (define-macro (read-if-ready fdSym fdsReadySym outputSym newOutputFlagSym
                              repeatFlagExpr
                              , (fd (eval fdSym))
@@ -351,26 +358,32 @@
           (extend (eval outputSym) buf)))))
 (define (trailing str num) ; rets last num chars of str
   ((- (min num (length str))) str))
+(define (str-ends-with? str end)
+  (= (trailing str (length end))
+     end))
+
 (define (collect-remote-results fm readyFDs
                                 , buf)
-  ;; (dbg:expr (peek fm:i<-r_meta))
+  ;;(dbg:expr-loc 'collect-remote-results readyFDs)
   (if (find fm:i<-r_meta readyFDs)
       (begin
-        (read fm:i<-r_meta buf c_bufSize_meta "\n") ; read until '\n'
-        (set 'fm:r_meta buf) ; stems from prompt-event, thereafter ..
-        ;;(logg:info "before (sleep 1000)")
-        (sleep 10)) ; .. give prompt a little time to appear in stdout
-      (set 'fm:r_meta nil))
+        (set 'fm:r_meta_count 0) ; count meta (prompt) events
+        ;; there are multiple prompt events after interrupt followed by reset!
+        (while (not (null? (peek fm:i<-r_meta)))
+          (read fm:i<-r_meta buf c_bufSize_meta "\n") ; read until '\n'
+          ;;(dbg:expr buf)
+          (++ fm:r_meta_count)
+          (sleep 10))
+        (set 'fm:r_meta buf)) ; stems from prompt-event
+      (set 'fm:r_meta nil
+           'fm:r_meta_count 0))
   (read-if-ready fm:i<-r_out readyFDs fm:r_out fm:r_out_new_flag fm:r_meta)
   (read-if-ready fm:i<-r_err readyFDs fm:r_err fm:r_err_new_flag fm:r_meta)
   (read-if-ready fm:i<-r_introspection readyFDs fm:r_introspection
                  fm:r_introspection_new_flag fm:r_meta)
+  (if (and (nil? fm:r_meta) fm:r_out_new_flag) ; prepare second finish criterium
+      (set 'fm:trail (trailing fm:r_out c_maxlen_prompt))))
 
-  (if (and (nil? fm:r_meta) fm:r_out) ; prepare second finish criterium
-      (set 'fm:trail (trailing (append (or fm:trail "") fm:r_out)
-                               c_len_debuggerPrompt))))
-
-(constant 'is Introspection) ; shortcut
 ;;
 (define (end-of-chop-utf8 str)
   (length (chop str)))
@@ -429,9 +442,10 @@
 
 (define (handle_sendRemoteResults
          fm
-         promptEventFlag debuggerPromptFlag
+         promptEventFlag debuggerPromptFlag interruptPromptFlag
          (promptFlag (or promptEventFlag
-                         debuggerPromptFlag))
+                         debuggerPromptFlag
+                         interruptPromptFlag))
          , obj rrObj res)
   (if nil ;promptFlag
       (begin
@@ -462,8 +476,11 @@
       (begin
         (JSON:add-prop "resultID" (string (++ fm:resultCount)) rrObj)))
   (JSON:add-prop "evalStatus" (if promptFlag "finished" "running") rrObj)
+  ;;(dbg:expr promptFlag debuggerPromptFlag interruptPromptFlag)
   (if promptFlag
-      (JSON:add-prop "promptType" (if debuggerPromptFlag "debug" "normal")
+      (JSON:add-prop "promptType" (if debuggerPromptFlag "debug"
+                                      interruptPromptFlag "interrupt"
+                                      "normal")
                      rrObj))
   (if (or fm:r_out_new_flag
           (and promptFlag (> (length fm:r_out) 0))) ; last Unicode char
@@ -489,18 +506,15 @@
   ;; chop not used, due to transferring as big JSON string chunk
   (when (or fm:r_introspection_new_flag
             (and promptFlag (> (length fm:r_introspection) 0)))
-    (dbg:expr (string? fm:r_introspection) promptFlag (length fm:r_introspection))
-    (dbg:expr (0 30 fm:r_introspection))
+    ;;(dbg:expr (0 30 fm:r_introspection))
+    ;;(write-file "/tmp/t.json" fm:r_introspection)
     (JSON:add-prop-valJSON "introspection"
                            (if promptFlag
                                fm:r_introspection
                                ;;(chop-utf8-leaveRest fm:r_introspection))
                                (assert "should not been reached" nil))
                            rrObj))
-
   (JSON:add-prop "evalResult" rrObj obj)
-  ;;(dbg:expr res (valid-utf8 res))
-  ;(dbg:expr (json-parse res))
   (when nil
     (when (nil? (json-parse res))
       (dbg:expr (json-error))
@@ -524,13 +538,7 @@
 (constant 'c_remoteStatus->str '("none" "running" "dead"))
 (define (remoteStatus->str status)
   (c_remoteStatus->str status))
-(define (foo status)
-  (dbg:expr status)
-  (case status
-    (nil "none")
-    (1 "running")
-    (2 "dead")
-    (true "unknown")))
+
 ;; use curr fm
 (define (checkRemoteDead)
   (dbg:begin  "checkRemoteDead")
@@ -559,18 +567,15 @@
   (set 'fm:res_message "Remote connection error -> kill remote for cleanup.")
   (destroy fm:pid_remote 9)
   (fm:advance "remoteEvalError"))
+
 (constant 'trr_sleep_ms 50) ; 1ms is too small
 (define (handle_transferRemoteResults fm selectFlag
                                       , readies)
-  ;(if (= (++ t_count) 12) (close fm:conn))
-  ;(dbg:expr (peek fm:conn) (net-error))
   (sleep trr_sleep_ms)
   (set 'readies (net-select-continue-if-handled-sig
                  (append fm:i<-r_all (list fm:in_selfPipeSIGCHLD fm:conn))
                  "r"))
-  (if ; (= (++ t_count) 10) ; testing
-      ; (fm:advance "remoteEval_pipeError")
-      (net-error) ; 0.
+  (if (net-error) ; 0.
       (begin
         (if (nil? (peek fm:conn))
                   (fm:advance "net-error") ; browser->inspector websocket conn
@@ -584,14 +589,46 @@
       (fm:advance "remoteDiedEvent")
       (begin ; 3.
         (collect-remote-results fm readies)
-        (letn ((promptEventFlag (= fm:r_meta "prompt-event\n"))
-               (debuggerPromptFlag (= c_debuggerPrompt fm:trail))
-               (evalFinishedFlag (or promptEventFlag debuggerPromptFlag)))
-          (if (and (= fm:remoteEval_resultTransfer "bigChunk")
-                   (not evalFinishedFlag))
-              (fm:advance "repeatTransferRemoteResults") ; collect again
-              (fm:advance "sendRemoteResults"
-                          promptEventFlag debuggerPromptFlag))))))
+        (let ((promptEventFlag (= fm:r_meta "prompt-event\n"))
+              (break))
+          (when (> fm:r_meta_count 1) ; true, if reset after interrupt
+            (logg:info "Multiple prompts: looks like reset after interrupt."))
+          (when (and promptEventFlag
+                     (not fm:r_out_new_flag)) ; no prompt seen in stdout so far
+            (begin ;; collect-remote-results again (after pause and with ..
+              ;;      .. smaller select set)
+              (logg:info
+               "Remote prompt event, but no prompt seen in stdout so far:"
+               " -> look for remote output again.")
+              (set 'readies (net-select-continue-if-handled-sig
+                             fm:i<-r_all "r" 1000000)) ; 1s timeout
+              (if (net-error)
+                  (begin
+                    (fm:advance "remoteEval_pipeError")
+                    (set 'break true))
+                  (begin
+                    (when (not (find fm:i<-r_out readies))
+                      (logg:error "prompt in remote stdout missing -> ignored"))
+                    (collect-remote-results fm readies)))))
+          (when (not break)
+            (letn ((debuggerPromptFlag
+                    (and (not promptEventFlag)
+                         fm:trail
+                         (str-ends-with? fm:trail c_debuggerPrompt)))
+                   (interruptPromptFlag
+                    (and (not debuggerPromptFlag)
+                         fm:trail
+                         (str-ends-with? fm:trail c_interruptPrompt)))
+                   (evalFinishedFlag (or promptEventFlag
+                                         debuggerPromptFlag
+                                         interruptPromptFlag)))
+              (if (and (= fm:remoteEval_resultTransfer "bigChunk")
+                       (not evalFinishedFlag))
+                  (fm:advance "repeatTransferRemoteResults") ; collect again
+                  (fm:advance "sendRemoteResults"
+                              promptEventFlag
+                              debuggerPromptFlag
+                              interruptPromptFlag))))))))
 ;;
 ;; Indirection needed for looping: advancing to same flow (state) is forbidden
 ;; (because this typically is an error).
@@ -956,11 +993,11 @@
                       "reply to \"test websocket connection\"")
                  (fm:advance "controlResponse"))
                 (true
-                 (dbg:expr fm:req_type)
                  (set 'fm:res_message
                       (append "Request type \""
                               (or fm:req_type "")
                               "\" not handled."))
+                 (logg:warn fm:res_message)
                  (fm:advance "controlErrorResponse"))))
             (begin ; pong raw text messages
               (set 'fm:response (WS_WS:text->msg
@@ -979,11 +1016,11 @@
            (set 'fm:or_req_remoteControl (lookup fm:or_req_type fm:or_req))
            (fm:advance (append fm:or_req_type "_nested")))
           (true
-           (dbg:expr fm:or_req_type)
            (set 'fm:or_res_message
                 (append "Request type \""
                         (or fm:or_req_type "")
                         "\" not handled."))
+           (logg:warn fm:res_message)
            (fm:advance "controlErrorResponse_nested"))))
       (begin
         (set 'fm:or_res_message

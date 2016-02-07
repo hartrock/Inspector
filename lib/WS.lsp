@@ -17,7 +17,8 @@
 (new Tree 'WS_T_Content)
 (new Tree 'WS_T_Queue)
 ;;
-(global 'WS_Headers_request 'WS_Headers_response) ; dynamically created/deleted Trees
+(global 'WS_Headers_request) ; dynamically created/deleted Tree
+;; 'WS_Headers_response) ;think refac to use it?
 
 
 (context WS)
@@ -274,15 +275,14 @@
 (constant 'do-net-peek_max_trials 11) ; max sleep before last 11. trial: 2^10ms
 
 (define (prepare)
-  (new Tree 'MAIN:WS_Headers_request)
-  (new Tree 'MAIN:WS_Headers_response))
+  (new Tree 'MAIN:WS_Headers_request))
+  ;;(new Tree 'MAIN:WS_Headers_response))
 
 (define (cleanup)
-  ;;(dbg:expr debug_mode)
-  (when (not debug_mode)
-    (if WS_Headers_request (delete 'MAIN:WS_Headers_request))
-    (if WS_Headers_response (delete 'MAIN:WS_Headers_response))
-    (setq data_request nil data_response nil)))
+  (if WS_Headers_request (delete 'MAIN:WS_Headers_request))
+  ;;(if WS_Headers_response (delete 'MAIN:WS_Headers_response))
+  (set 'data_request nil
+       'string_response nil))
 
 (define (OLD_rec-n-parse-header , str )
   (set 'buf_len 1024) ; may be too small
@@ -444,7 +444,9 @@
    ("default"
     (logg:fatal "unknown server protocol " server_protocol)
     (exit 1)))
-  (constant 'URLprefix (or prefix_resource "/")
+  ;; prefix_resource may be set from outside
+  (constant 'URLprefix (or prefix_resource
+                           "/") ; sep alone
             'URLprefix_len (length URLprefix)))
 
 
@@ -460,12 +462,14 @@
   (set 'buf_len (* 1024 1024))
   (fm:advance "receiveNparse_header")) ; (rec-n-parse-header conn)
 
-(define (URL-to-localname-and-params url
-                                     , localURL splitURL localName
+(define (URL-to-localpath-and-params url
+                                     , localURL splitURL localpath
                                        paramsURL params)
-  (set 'localURL (URLprefix_len url)
-       'splitURL (parse localURL "?")
-       'localname (splitURL 0)
+  (set 'localURL (URLprefix_len url) ; -> "" or localpath with opt args
+       'splitURL (parse localURL "?") ; -> (empty) '() for ""
+       'localpath (if splitURL
+                      (splitURL 0) ; only there, if non-empty url string
+                      "index.html") ; by "/" or "" after host:port in browser
        ;; join of rest for allowing '?'s after first '?' as part of query string
        'paramsURL (if (>= (length splitURL) 2) (join (rest splitURL) "?"))
        'params
@@ -479,7 +483,7 @@
                                   "true"))) ; treat missing "=val" as true flag
                     (cons key val)))
                 paramsList))))
-  (list localname params))
+  (list localpath params))
 
 (define (rsuffix rname)
   (let ((pos (find "\\." rname 0)))
@@ -677,16 +681,7 @@
    (true (append "Websocket error code: " (string statuscode)))
    ))
 (define (handle_START fm)
-  ;;(dbg:expr fm)
-  ;; (:eval-curr-func fm_res) ; -> recursive evaluation not allowed.
-
-  ;; some cleanup from previous request (for debugging it's good to leave it a
-  ;; while)
-  (set 'str_head nil
-       'str_content nil
-       'http_status nil
-       'MIMEtype nil
-       'string_response nil)
+  ;; for (cleanup) see there
   (fm:advance "compute_rprops")
 )
 
@@ -795,28 +790,27 @@
   (send-response conn) ; conn 'global'
   (fm:advance "websocket_do-protocol"))
 
-(define (handle_websocket_do-protocol fm)
+(define (websocket_do-protocol fm)
   (set 'fm_ws (:fm (WS_T_Resource rname))
        'fm_ws:conn conn)
-  ;;(dbg:expr WS:fm_echo WebsocketFM:fm_echo)
-  ;;(dbg:expr (= WS:fm_echo WebsocketFM:fm_echo))
+  (net-close listen) ; no further use of listen socket by fork
+  (set 'listen nil)
   (fm_ws:START)
   (fm:advance "EXIT"))
 (define (handle_websocket_do-protocol_fork fm)
-  (set 'pid (fork (handle_websocket_do-protocol fm)))
-  (dbg:expr pid)
+  (set 'pid (fork (websocket_do-protocol fm)))
+  (logg:info "Websocket fork has PID " pid ".")
   (fm:advance "EXIT"
               true)) ; hasBeenForked
 
 
 (define (handle_compute_rprops fm)
   ;; (set 'tmp (WS_Headers_request "url")) ; for debugging
-  (let (localname_and_params
-        ;; (debug (URL-to-localname-and-params tmp))) ; for debugging
-        (URL-to-localname-and-params (WS_Headers_request "url")))
-    ;;(dbg:expr localname_and_params)
-    (set 'rname (localname_and_params 0)
-         'rparams (localname_and_params 1)))
+  (let (localpath_and_params
+        ;; (debug (URL-to-localpath-and-params tmp))) ; for debugging
+        (URL-to-localpath-and-params (WS_Headers_request "url")))
+    (set 'rname (localpath_and_params 0)
+         'rparams (localpath_and_params 1)))
   (fm:advance "check_debugMode"))
 
 (define (handle_check_debugMode fm)
@@ -1028,14 +1022,12 @@
   hasBeenForked)
 ;; fm_res FM loop
 (define (compute-response
-         ,
+         , ; some vars being used by fm_res
          rname ; leads to nil val of WS:rname sym after return
          rparams ; URL params
-         http_status str_content MIMEtype
-         str_head)
-  (fm_res:START))
-
-
+         http_status http_extra_header_str str_content MIMEtype
+         str_head str_content) ; string_response shared between fm_main, fm_res
+  (fm_res:START)) ; rets true, if further computation has been forked
 
 (define (send-response conn
                        , num_sent)
@@ -1067,10 +1059,11 @@
         (:advance fm_main "start_listening"))
 
        ((= curr "start_listening")
-        (when (not (set 'listen (net-listen server_port)))
-          print "ERR opening socket: " (net-error)
-          (:advance fm_main "start_listening_error"))
-        (:advance fm_main "listen"))
+        (if (not (set 'listen (net-listen server_port)))
+            (begin
+              (logg:error "opening socket: " (net-error))
+              (:advance fm_main "start_listening_error"))
+            (:advance fm_main "listen")))
        ;;
        ((= curr "start_listening_error")
         (logg:fatal "cannot open socket for listeening: giving up.")
@@ -1087,8 +1080,9 @@
        ;;
        ((= curr "accept_error")
         (logg:error "accept error: start listening anew (recreate socket).")
-        (if conn (net-close conn))
         (net-close listen)
+        (logg:info "sleep 10s")
+        (sleep 10000) ; avoid fast errorneous loop
         (:advance fm_main "start_listening"))
 
        ((= curr "accept")
@@ -1105,7 +1099,9 @@
 
        ((= curr "compute_response")
         (if (set 'hasBeenForked (compute-response))
-            (:advance fm_main "cleanup_after_request") ; response delegated
+            (begin
+              (logg:info "Computation of response has been forked.")
+              (:advance fm_main "cleanup_after_request")) ; response delegated
             (:advance fm_main "send_response"))) ; responsible for response
 
        ((= curr "send_response")
@@ -1123,7 +1119,7 @@
         (when leave_after_reply
           (set 'continue nil
                'leave_after_reply nil)
-          (close listen)
+          (net-close listen)
           (set 'listen nil)))
        ("default"
         (logg:fatal "Unknown flow " curr ": exiting.")

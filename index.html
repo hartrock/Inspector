@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Overview</title>
+
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+
+    <link rel="stylesheet" href="inspector.css">
+
+    <script>
+      window.onload = function(){
+      document.getElementById("port").innerHTML = "" + location.port;
+      };
+    </script>
+
+  </head>
+  <body id="body_overview">
+
+    <h1>[Inspector] Overview</h1>
+
+    <h2>Quick Start</h2>
+
+    Main application:<br>
+    <a href="inspector.html">Remote Inspector</a> with remote console for evaluations and remote's symbols view.
+
+    <h3>More Links</h3>
+
+    <ul>
+      <li>
+        <a href="inspector.html#MAIN">
+          Remote Inspector with jump to MAIN context folder</a>
+      </li>
+      <li>
+        <a href="inspector.html#MAIN:$main-args">
+          Remote Inspector with jump to MAIN:$main-args symbol</a>
+        (inside opened MAIN context folder)
+      </li>
+      <li>
+        <a href="symbols.html">
+          Inspector's webserver symbols</a>
+        (newLISP interpreter instance) serving this and other pages (e.g. Remote Inspector GUI).
+      </li>
+      <li>
+        <a href="leave">
+          Leave accept loop of Inspector's webserver</a>
+        via browser: for debugging purposes. To be restarted by
+        <code>(Inspector:start)</code>
+        in terminal.
+      </li>
+    </ul>
+
+
+    <h2>Remote Inspector</h2>
+    
+    Some basic info is available via the <a href="https://github.com/hartrock/Inspector#inspector">Project Page at Github</a>.
+
+    <h3>Security Warning</h3>
+
+    This application is capable to <em>look into and <b>manipulate</b> your system</em>.<br>
+    So you should:
+    <ul>
+      <li>
+        <em>close</em> port
+        <code><span id="port"></span></code>
+        in use here to the outside by some firewall, to
+      </li>
+      <li>
+        <em>be <b>not</b> accessible from outside</em> your host or - at least - private network.
+      </li>
+    </ul>
+    You have been warned!
+
+    <h3>Usage Notes</h3>
+    <ul>
+      <li>
+        Resizable layout: remote console in top-left GUI area can be resized by handles at its borders (sizes of other areas are adapting to it).
+      </li>
+      <li>
+        Symbols view in top-right GUI area has a help at its bottom.
+      </li>
+      <li>
+        There are some hover infos.
+      </li>
+    </ul>
+
+
+    <h2>Credits</h2>
+    <p>
+      Part of this application is software from many other projects and their people: the author thanks all of them.
+    </p>
+    <table>
+      <tr>
+        <th>Software</th>
+        <th>Project Page</th>
+        <th>Description</th>
+        <th>Usecase here</th>
+      </tr>
+      <tr>
+        <td>newLISP</td>
+        <td><a href="http://www.newlisp.org/">
+            http://www.newlisp.org/</a>
+        </td>
+        <td>newLISP interpreter</td>
+        <td>local webserver, inspected remote interpreter</td>
+      </tr>
+      <tr>
+        <td>CodeMirror</td>
+        <td>
+          <a href="http://codemirror.net">
+          http://codemirror.net</a>
+        </td>
+        <td>editor widget Javascript library</td>
+        <td>
+          remote console (stdin, stdout), remote stderr and local webserver stderr
+        </td>
+      </tr>
+      <tr>
+        <td>interact.js</td>
+        <td>
+          <a href="https://raw.github.com/taye/interact.js/">
+          https://raw.github.com/taye/interact.js/</a>
+        </td>
+        <td>Javascript library</td>
+        <td>resize functionality of remote console</td>
+      </tr>
+      <tr>
+        <td>JqTree</td>
+        <td>
+          <a href="https://mbraak.github.io/jqTree/">
+          https://mbraak.github.io/jqTree/</a>
+        </td>
+        <td>tree widget Javascript library</td>
+        <td>symbols view</td>
+      </tr>
+<!--
+      <tr>
+        <td></td>
+        <td>
+          <a href="?">
+          ?</a>
+        </td>
+        <td></td>
+        <td></td>
+      </tr>
+      -->
+    </table>
+
+  </body>
+</html>

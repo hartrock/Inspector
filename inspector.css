@@ -91,4 +91,19 @@ span.is_non-UTF-8 {
 span.is_symProps {
     font-weight: bold;
 }
+
+/*
+ * index.html
+ */
+#body_overview {
+    background-color: #f5f5f5;
+}
+#body_overview table {
+    border: 2px solid;
+    border-collapse: collapse;
+}
+#body_overview table tr, #body_overview table td, #body_overview table th {
+    border: 1px solid;
+    padding: 0.5em;
+}
 /* EOF */

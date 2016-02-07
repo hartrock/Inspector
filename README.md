@@ -1,3 +1,5 @@
+...ongoing changes...
+
 # Inspector
 
 For inspecting a newLISP system.
@@ -5,6 +7,29 @@ For inspecting a newLISP system.
 Directly to [How to start](#how-to-start).
 
 ### News
+
+- v0.4: Remote Console (big changes)
+  An adiitional newLISP process will be started as a remote (a former one is the Inspector's webserver process serving the browser GUI):
+  - Remote interaction by a remote console widget inside browser window, mimicking a newLISP interpreter shell inside a terminal.
+    Some remote console features:
+    - shows remote's stderr separated into an extra window;
+    - support for newLISP's debugging mode, with update of symbols after each step;
+    - command history twice:
+      - single-line history, and
+      - multi-line history;
+    - continuous output of intermediate results in case of longer lasting evaluations;
+    - evaluations may be terminated by killing remote.
+  - Remote control by:
+    - starting it with CLI arguments,
+    - terminating it with SIGTERM/SIGKILL;
+  - Remote inspection of its symbols by symbols widget (tree view) inside browser window, which will be updated with *each* interpreter prompt.
+  - Multiple remotes: support for multiple browser windows/tabs each having its own remote.
+
+  Communication channels are:
+  - a websocket connection between browser window and (forked) Inspector process;
+  - pipes between Inspector and remote processes.
+
+  All of this together is much better for debugging purposes than Ping-pong mode in v0.3.
 
 - v0.3: [Ping-pong mode demo](#ping-pong-mode-demo)  
   In ping-pong mode
@@ -16,6 +41,18 @@ Directly to [How to start](#how-to-start).
 
 
 ### Screenshots
+
+#### Remote Inspector
+![](screenshot_RI.png)
+
+#### Remote Inspector: debugging session
+![](screenshot_RI_debugging.png)
+
+#### Webserver's symbols
+![](screenshot_symbols_webserver.png)
+
+
+### Screenshots v0.3
 
 #### Viewing Inspector's symbols
 ![](screenshot_inspect_self.png)
@@ -36,25 +73,28 @@ In Smalltalk systems out of the last millenium there have been so called 'inspec
 
 Essential building blocks of a newLISP system are symbols evaluating to some value. All symbols together with their current evaluations at some point of time are giving very much information about it (though not all).
 
-So here is an 'Inspector' app for inspecting all newLISP symbols: GUI are browser windows, getting their input from a newLISP webserver/webservice process.
+So here is an 'Inspector' app for inspecting all newLISP symbols: its GUI are browser windows, getting their input from a newLISP webserver/webservice process.
 
-Communication between newLISP and the browser is synchronous: after starting the newLISP webservice symbols can be explored by (re)loading
-  `http://localhost:8080/symbols.html`,
-until (re)loading
-  `http://localhost:8080/leave` (*),
-which ends it (but it can be restarted).
+This webserver controls and communicates with a remotely started newLISP instance, and forwards its input and output from/to the browser (for the highly interactive parts between webserver and browser a websocket connection is used).
 
-
-
-### Some properties of Inspector
-
-- synchronous communication of GUI with Inspector webservice;
-- navigation by mouse and keyboard;
-- jump directly to symbols by using hashes/anchors (e.g. http://localhost:8080/#MAIN:MAIN refers to MAIN context symbol);
-- context folders structuring symbol space;
-- additional folders by double-clicking onto a symbol evaluating to some structure *containing* symbols: like lambdas, macros and lists (this is for getting *related* symbols together into their own folder).
+After starting Inspector's webserver a remote can be controlled and its symbols can be explored by loading
+  `http://localhost:8080/inspector.html` (*)
+.
 
 
+
+### Some properties of Remote Inspector
+
+- communication of browser GUI with Inspector's webserver, which communicates via pipes with a remote newLISP process;
+- symbols view:
+  - navigation by mouse and keyboard;
+  - jump directly to symbols by using hashes/anchors (e.g. http://localhost:8080/inspector.html#MAIN:MAIN refers to MAIN context symbol);
+  - context folders structuring symbol namespace;
+  - additional folders by double-clicking onto a symbol evaluating to some structure *containing* symbols: like lambdas, macros and lists (this is for getting *related* symbols together into their own folder).
+- remote console:
+  - interactive console - stdin/stdout - like newlisp started inside a terminal:
+    - supports `(debug ...)` mode
+    - extra stderr window
 
 ### How to start
 

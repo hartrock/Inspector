@@ -51,6 +51,8 @@ You can jump to a symbol by using its anchor; e.g. for jumping to MAIN:MAIN use:
   (WS:create-eval-resource "symbols" 'render-symbols)
   (WS:create-eval-resource "symbols-JSON" 'symbols-JSON)
 
+  (WS:create-static-resource "index.html" (read-file-here "index.html")
+                             "text/html")
   (WS:create-static-resource "favicon.ico" (read-file-here "favicon.ico")
                              "image/x-icon")
   
@@ -107,7 +109,7 @@ You can jump to a symbol by using its anchor; e.g. for jumping to MAIN:MAIN use:
    "consoleAlone.html" (read-file-here "consoleAlone.html")
    "text/html")
   (WS:create-static-resource
-   "console.html" (read-file-here "console.html")
+   "inspector.html" (read-file-here "inspector.html")
    "text/html")
   (WS:create-static-resource
    "interact.js" (read-file-here "interact.js")

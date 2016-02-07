@@ -150,6 +150,7 @@ var Inspector = Inspector || {};
   //
   var evalConsoleStatus = null;
   var debugPromptFlag = false;
+  var interruptPromptFlag = false;
   //
   var evalIntrospectionStatus = null;
   var introspectionCallback;
@@ -514,7 +515,8 @@ var Inspector = Inspector || {};
           var command = null;
           if (inputMode === "single") {
             if (inEmptyCommandLine()
-                && ! debugPromptFlag) { // no multiline mode if debug prompt
+                && ! (debugPromptFlag            // no multiline mode, if ..
+                      || interruptPromptFlag)) { // .. debug or interrupt prompt
               multiStart();
             } else {
               var doCommand = inSingleCommandLine() || atEOL() || atEmptyLine();
@@ -789,8 +791,14 @@ var Inspector = Inspector || {};
         if (evalConsoleStatus === "OK") {
           writeRemoteResults(rr);
           if (evalFinishedFlag) {
-            hasSymbolsViewFlag && updateSymbolsView();
             debugPromptFlag = rr.promptType === "debug";
+            interruptPromptFlag = rr.promptType === "interrupt";
+            console.log(rr, interruptPromptFlag);
+            // introspection possible at normal and debug prompt, but ..
+            if (hasSymbolsViewFlag
+                && ! interruptPromptFlag) { // .. not after interrupt
+              updateSymbolsView(); // performs introspection
+            }
             unlockFlag = true;
           }
         } else { // error
@@ -811,6 +819,7 @@ var Inspector = Inspector || {};
         evalIntrospectionStatus = status;
         if (evalIntrospectionStatus === "OK") {
           assert(evalStatus === "finished");
+          //console.log("rr.stdout:", rr.stdout);
           if (rr.stdout) { // "\n" before prompt
             var len = (rr.stdout instanceof Array
                        ? rr.stdout[rr.stdout.length - 1].split('\n')[0]
@@ -862,10 +871,20 @@ var Inspector = Inspector || {};
           break;
         case "kill":
           var signal = subprops.signal;
-          log_info("Remote with PID " + pid + " 'killed' "
-                   + (signal === 15 ? "soft" : signal === 9 ? "hard" : "")
-                   + " with signal " + signal + ".");
-            //+ " (there is an event, if it really has died).");
+          log_info("Remote with PID " + pid
+                   + " "
+                   + (signal === 15
+                      ? "'killed' soft"
+                      : signal === 9
+                      ? "'killed' hard"
+                      : signal === 2
+                      ? "interrupted"
+                      : "")
+                   + ": signal " + signal + " sent"
+                   + (signal === 15 || signal === 9
+                      ? " (there follows an event, if remote really has died)"
+                      : "")
+                   + ".");
           break;
         default:
           log_err("Protocol error.");
@@ -1159,7 +1178,7 @@ var Inspector = Inspector || {};
       console.log(actionStr);
       ev.preventDefault();
       switch (actionStr) {
-      case "start remote":
+      case "start":
         var argsStr = $("#remoteArguments").val();
         performControl_startRemote(argsStr);
         break;
@@ -1168,6 +1187,9 @@ var Inspector = Inspector || {};
         break;
       case "kill hard":
         performControl_killRemote(9);
+        break;
+      case "interrupt":
+        performControl_killRemote(2);
         break;
       default:
         log_err("Implementation (should not been reached).");
@@ -1226,7 +1248,19 @@ var Inspector = Inspector || {};
 
 ////
 $(document).ready(function(){
-  alert("document ready");
+  alert("Good news: Inspector's webserver is running.\n"
+        + "\n"
+        + "Security warning:\n"
+        + "----\n"
+        + "This application is capable to "
+        + "*** look into and *manipulate* your system ***.\n"
+        + "So you should:\n"
+        + "- *close* port " + location.port
+        + " in use here to the outside by some firewall, to\n"
+        + "- *** be *not* accessible from outside ***"
+        + " your host or - at least - private network.\n"
+        + "You have been warned!\n"
+        + "----\n");
   Inspector.init();
 });
 // EOF

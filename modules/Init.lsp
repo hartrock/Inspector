@@ -33,8 +33,10 @@
 ;;
 ;; default logger
 
-(set 'logg (Logger 2 (fn () "[log]")))
-;; OLD: (Util:mixin-no-overwrite-of-non-nil LoggerExpr logg)
+(set 'logg (Logger 2 (fn () (string
+                             "[log "
+                             (sys-info -3) ; PID
+                             "]"))))
 (logg:mixin-expr)
 (global 'logg)
 
@@ -44,7 +46,8 @@
 (when (context? dbg) ; avoid deleting dbg sym, but ..
   (delete 'dbg)) ; .. delete dbg context from Init.minimal.lsp
 
-(set 'dbg (Logger 2 (fn () "[dbg]") Logger:level_all))
+(set 'dbg
+     (Logger 2 (fn () (string "[dbg " (sys-info -3) "]")) Logger:level_all))
 (dbg:mixin-expr-debug)
 
 ;; has to overwrite non-nil syms from LoggerDebug, if put thereafter
