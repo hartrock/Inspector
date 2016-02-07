@@ -8,28 +8,10 @@ Directly to [How to start](#how-to-start).
 
 ### News
 
-- v0.4: Remote Console (big changes)
-  An adiitional newLISP process will be started as a remote (a former one is the Inspector's webserver process serving the browser GUI):
-  - Remote interaction by a remote console widget inside browser window, mimicking a newLISP interpreter shell inside a terminal.
-    Some remote console features:
-    - shows remote's stderr separated into an extra window;
-    - support for newLISP's debugging mode, with update of symbols after each step;
-    - command history twice:
-      - single-line history, and
-      - multi-line history;
-    - continuous output of intermediate results in case of longer lasting evaluations;
-    - evaluations may be terminated by killing remote.
-  - Remote control by:
-    - starting it with CLI arguments,
-    - terminating it with SIGTERM/SIGKILL;
-  - Remote inspection of its symbols by symbols widget (tree view) inside browser window, which will be updated with *each* interpreter prompt.
-  - Multiple remotes: support for multiple browser windows/tabs each having its own remote.
+- v0.4: Working horse application of Inspector is 'Remote Inspector' now (big changes in comparison to v0.3)
+  An adiitional newLISP process will be started as a remote (a former one is Inspector's webserver process serving the browser GUI), which will be controlled by Remote Inspector's GUI.
 
-  Communication channels are:
-  - a websocket connection between browser window and (forked) Inspector process;
-  - pipes between Inspector and remote processes.
-
-  All of this together is much better for debugging purposes than Ping-pong mode in v0.3.
+  See [Remote Inspector](remote-inspector) for a description.
 
 - v0.3: [Ping-pong mode demo](#ping-pong-mode-demo)  
   In ping-pong mode
@@ -40,7 +22,7 @@ Directly to [How to start](#how-to-start).
 
 
 
-### Screenshots
+### Screenshots v0.4
 
 #### Remote Inspector
 ![](screenshot_RI.png)
@@ -48,7 +30,7 @@ Directly to [How to start](#how-to-start).
 #### Remote Inspector: debugging session
 ![](screenshot_RI_debugging.png)
 
-#### Webserver's symbols
+#### Inspector's webserver's symbols (serving Remote Inspector GUI)
 ![](screenshot_symbols_webserver.png)
 
 
@@ -73,32 +55,112 @@ In Smalltalk systems out of the last millenium there have been so called 'inspec
 
 Essential building blocks of a newLISP system are symbols evaluating to some value. All symbols together with their current evaluations at some point of time are giving very much information about it (though not all).
 
-So here is an 'Inspector' app for inspecting all newLISP symbols: its GUI are browser windows, getting their input from a newLISP webserver/webservice process.
+So here is an 'Inspector' app for inspecting all newLISP symbols: its GUI are browser windows, getting their input from a newLISP webserver process.
 
-This webserver controls and communicates with a remotely started newLISP instance, and forwards its input and output from/to the browser (for the highly interactive parts between webserver and browser a websocket connection is used).
+This webserver controls and communicates with a remotely started newLISP instance, and forwards its input and output from/to the browser:
+- for the highly interactive parts of communication between webserver (newLISP) and browser (Javascript) a websocket connection is used;
+- communication between webserver and remote processes (both newLISP) is done by pipes.
 
-After starting Inspector's webserver a remote can be controlled and its symbols can be explored by loading
+After starting Inspector's webserver a remote can be controlled and its symbols can be explored with Remote Inspector GUI by loading
   `http://localhost:8080/inspector.html` (*)
+; an overview page will be shown by visiting
+  `http://localhost:8080/`
 .
 
 
 
-### Some properties of Remote Inspector
+### Remote Inspector
 
-- communication of browser GUI with Inspector's webserver, which communicates via pipes with a remote newLISP process;
-- symbols view:
-  - navigation by mouse and keyboard;
-  - jump directly to symbols by using hashes/anchors (e.g. http://localhost:8080/inspector.html#MAIN:MAIN refers to MAIN context symbol);
-  - context folders structuring symbol namespace;
-  - additional folders by double-clicking onto a symbol evaluating to some structure *containing* symbols: like lambdas, macros and lists (this is for getting *related* symbols together into their own folder).
-- remote console:
-  - interactive console - stdin/stdout - like newlisp started inside a terminal:
-    - supports `(debug ...)` mode
-    - extra stderr window
+Remote Inspector is the main application - 'working horse' - here.
+
+Remote Inspector consists of three parts:
+- Inspector's webserver for serving its GUI runs as a newLISP process, to be started by the user;
+- Remote Inspector's GUI is running inside a browser window as a Javascript process;
+- Remote Inspector's remote is a newLISP process to be visualized and controlled by its GUI.
+
+Communication between remote process (newLISP) and GUI process (Javascript) goes via an intermediate webserver process (newLISP).
+Because this longer lasting and highly interactive communication will be handled by a forked webserver process, multiple browser window GUIs each having its own remote are possible (so it becomes possible to compare behavior of different remote processes).
+
+
+#### General features of Remote Inspector
+
+- handles newLISP interrupt and debug mode;
+- multiple remotes: handles multiple browser windows/tabs each having its own remote;
+- communication channels are:
+  - a (bidirectional) websocket connection between browser window process (Javascript) and (forked) webserver process (newLISP),
+  - pipes between webserver and remote processes (both newLISP);
+- UTF-8 clean (this is a longer topic):
+  - visualizes originally invalid UTF-8 parts of stdout/stderr output and/or symbol names,
+  - all remote output will be transferred suitably quoted to the browser for always getting:
+    - valid UTF-8, needed for text transfer via websocket protocol, followed by
+    - valid JSON, needing valid UTF-8.
+
+
+#### Features of Remote Inspector's GUI
+
+Remote interaction from browser window GUI by:
+- a 'remote console' widget, mimicking a newLISP interpreter shell inside a terminal;
+- a 'remote control' menu-button for starting - with textbox for CLI arguments -, interrupting and terminating it;
+- a 'symbols view' widget (a tree control) for inspecting remote's symbols.
+
+Remote console features:
+- shows remote's stderr *separated* into an extra window (to see the difference between stdout and stderr);
+- support for newLISP's debugging mode, with update of symbols after each step;
+- command history twofold:
+  - single-line history, and
+  - multi-line history;
+- continuous output of intermediate results in case of longer lasting evaluations;
+ - evaluations may be terminated by interrupting or killing remote.
+
+Remote control features:
+- starting it with user defined CLI arguments;
+- interrupting it with SIGINT;
+- terminating it with SIGTERM/SIGKILL.
+
+Remote symbols view features:
+- shows symbol's properties visually and textually;
+- standard context folders (containing all of their symbols) structuring symbol namespaces;
+- additional user created lambda/macro/list folders - containing their symbols - for targeted inspecting of symbols, which belong together (and may stem from different contexts):
+  - created by double-click or return-key onto/at symbol evaluating to lambda/macro/list,
+  - created at top of standard context folders (which are always there);
+- frequent updates of symbol changes just after *each* normal or debug interpreter prompt (interrupt prompt is special);
+- navigation by mouse or keyboard;
+- direct jumps to symbols by using hashes/anchors in URL: e.g.
+  - `http://localhost:8080/inspector.html#MAIN` jumps to MAIN context folder,
+  - `http://localhost:8080/inspector.html#MAIN:$main-args` jumps to MAIN:$main-args symbol inside MAIN context folder (together with opening it).
+
+
+#### Features of Inspector's webserver
+
+Inspector's webserver provides all needed for Remote Inspector:
+- standalone webserver (not something needing another webserver as frontend);
+- websocket protocol implementation using forked webserver processes (to be usable in multiple windows/tabs;
+- normal features like serving static resources (currently all are preloaded in memory and served from there);
+- special Remote Inspector features for controlling a remote newLISP process.
+
+There are special features for another application, too.
+
+
+#### Important Note
+
+As it is now (and this may never change!), it's *not* suited for opening its served port to the wild. Please look into [Security Warning](security-warning), which also applies to Inspector's webserver in general (as it is now).
+
+
+
+### Security Warning
+
+This application is capable to look into and manipulate your system.
+So you should:
+- close port 8080 (or another one) in use here to the outside by some firewall, to
+- be not accessible from outside your host or - at least - private network.
+
+You have been warned!
+
+
 
 ### How to start
 
-Inspector runs with newLISP 10.6.2 (stable) and 10.6.4 (inprogress); tested under Linux only.
+Inspector runs with newLISP 10.7.0 (stable); it has been tested under Linux (Debian).
 
 Clone this repository and enter it (`REPO_DIR` usually will be `Inspector` somewhere in your filesystem):  
      `cd REPO_DIR`  
@@ -107,47 +169,26 @@ Clone this repository and enter it (`REPO_DIR` usually will be `Inspector` somew
 
 #### Simple start
 
-Showing:
-- Inspector's functionality,
-- how to start Inspector from newLISP.
+Explained here:
+1. how to start Inspector's webserver, and
+2. how to access Remote Inspector's GUI served by it.
 
 1. Run  
      `./startIt.lsp`  
-   (starts Inspector).
+   (starting Inspector's webserver).
 
 2. Load  
-     `http://localhost:8080/symbols.html` (*)  
-   from a browser (firefox works).
+     `http://localhost:8080/inspector.html` (*)  
+   from a browser (firefox works) to get Remote Inspector's GUI.
 
-There is
-- some Help at the bottom of page `http://localhost:8080/symbols.html`.
-
-
-#### Demos
-
-There are some demos (from less to more advanced).
-
-##### Loop demo
-
-This starts Inspector inside a simple counting loop (counting from 1 to 3), so it will be restarted again after leaving it.  
-Showing:
-- how a _change_ of a variable can be inspected by switching between:
-  - start commands from inside a newLISP process (programmatically or typed-in newLISP terminal), and
-  - leave commands by loading the leave URI from the browser.
-
-1. Run  
-     `./startIt_loop.lsp`  
-   (starts Inspector from inside a loop).
-2. Load  
-     `http://localhost:8080/symbols.html` (*)  
-   from a browser.
-
-There is
-- some info in the terminal output of Inspector's newLISP process about possible user actions;
-- some Help at the bottom of page `http://localhost:8080/symbols.html`.
+Notes:
+- A remote with simple 'Hello World' startup code will be started automatically;
+- there is some more info at '[Inspector] Overview' page at
+    `http://localhost:8080/`
+  .
 
 
-##### Snapshot'ing and viewing symbols of _another_ newLISP process
+#### Snapshot'ing and viewing symbols of an _external_ newLISP process, _not_ being started as a remote from Remote Inspector's GUI
 
 1. Run  
      `./startIt.lsp`  
@@ -156,23 +197,10 @@ There is
      `./snapshot.lsp`  
    (this makes a snapshot of a freshly started newLISP instance).
 3. Load  
-     `http:localhost:8080/symbols.html?file=/tmp/snapshot.json` (*)  
+     `http:localhost:8080/symbols.html?file=/tmp/snapshot.json` (*)
    from a browser (works under Linux, for other OSes another filepath may be needed).
 
-Needed infrastructure for Inspector - `./snapshot.lsp` - is quite big, but for snapshot'ing - `./snapshot.lsp` - only loading of two modules is needed.
-
-
-##### Ping-pong mode demo
-
-This demo shows a ping-pong-like control flow between Inspector server process and its browser GUI, which works without user interaction after a few preparatory steps: just run  
-  `./startIt_pingPong.lsp`  
-: info about how to proceed from browser GUI will be shown in its terminal output.
-
-This ping-pong mode is suited for viewing changes of symbol values of some interesting lambda/macro/list in time.
-Their symbols will be put together in one or more user created folders in advance (creation simply by double-click or Return). Changed values of these symbols will be automatically updated in browser view, if pinp-pong mode has been triggered by opening all of these user created folders (no buttons needed so far).
-
-Note:  
-In opposite to viewing symbols state snapshots of other newLISP processes, whole Inspector infrastructure is needed for ping-pong mode to work.
+Needed infrastructure for Inspector - `./startIt.lsp` - is quite big, but for snapshot'ing - `./snapshot.lsp` - only loading of two modules is needed.
 
 
 
@@ -185,13 +213,13 @@ It does not show the inner workings of the interpreter like
 - call stack, and
 - environment stack;
 
-which would be interesting for debugging (a full-featured debugger would need even more for e.g. setting breakpoints).
+which would be interesting for debugging (a full-featured debugger would need even more, e.g. support for setting breakpoints).
 
 
 
 ### Important notes to this piece of software
 
-This is **bleeding edge** software: used infrastructure in INSPECTOR_DIR/modules/ and INSPECTOR_DIR/lib/
+This is **bleeding edge** software: used infrastructure in REPO_DIR/modules/ and REPO_DIR/lib/
 - is not stable,
 - is not documented for reuse by others,
 - is not mature for publishing it as base for other apps,
@@ -202,11 +230,26 @@ But nevertheless Inspector may be of interest for others
 
 
 
+### newLISP support which would help now
+
+TODO.
+
+#### Performance
+
+#### Architecture
+
+
+
 ### Ideas for further development
 
-Note: 'less advanced' does not mean 'less work', but lesser work and risk to get it running as 'more advanced'.
+Note: 'less advanced' does not necessarily mean 'less work', but lesser work and risk to get it running as 'more advanced'.
 
-#### Less advanced
+
+#### _Done_ ideas for further development
+
+Some ideas have been realized.
+
+##### Less advanced
 
 Using a websocket connection for two purposes:
 - command line interaction with newLISP interpreter in a text window, while
@@ -216,8 +259,27 @@ This would need some protocol for interaction and some wrapper around interprete
 - querying symbols's state and their responses (first interaction), and
 - interpreter commands and their responses (second interaction).
 
+##### Realization
 
-#### More advanced
+- websocket communication between browser and webserver has been implemented;
+- symbol's state will be queried from remote and updated in GUI just after each suited - standard and debug - interpreter prompt (interrupt prompt is not suited for this);
+- there is a protocol based on JSON messages for the communication between GUI (Javascript) and webserver (newLISP);
+- communication between remote and webserver is done raw via pipes (both newLISP processes);
+- it is possible to send signals (SIGINT, SIGTERM, SIGKILL) to remote _while_ an evaluation is running;
+- prompt-event is used for getting standard prompt event, denoting end of some evaluation;
+- stdout output parsing is used for getting debug and interrupt prompt events;
+- introspection queries to remote will be done as evaluations being injected after suited prompt events: resulting in JSON data describing symbols' properties.
+
+
+#### _Undone_ Ideas for further development
+
+Unrealized ideas.
+
+##### Less advanced
+
+'Ping-pong mode'-like functionality - automated triggering of multiple evaluations with updates of symbols in time - by automatically repeating a command send from remote console (Javascript GUI) to remote (newLISP process): therefore only Javascript code had to be extended.
+
+##### More advanced
 
 It would be nice to have a more low-level interface to the inner state of the newLISP interpreter for
 - inspecting call stack together with environment stack (symbol values not at the top of environment stack are invisible now),
