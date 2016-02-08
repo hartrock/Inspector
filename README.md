@@ -24,10 +24,16 @@ Directly to [How to start](#how-to-start).
 
 ### Screenshots v0.4
 
-#### Remote Inspector
+#### Remote Inspector: just after start
 ![](screenshot_RI.png)
 
+#### Remote Inspector: changed layout
+
+Note: mouse pointer at bottom-right corner of remote console gives resize handle.
+![](screenshot_RI_changedLayout.png)
+
 #### Remote Inspector: debugging session
+
 ![](screenshot_RI_debugging.png)
 
 #### Inspector's webserver's symbols (serving Remote Inspector GUI)
