@@ -319,30 +319,37 @@
   (logg:info "[request...]")
   (local (line key val)
     (set 'line (read-line conn))
-    (set 'p (parse line " "))
-    (when (= (length p) 3)
-      (WS_Headers_request "method" (p 0))
-      (WS_Headers_request "url" (p 1))
-      (WS_Headers_request "protocol" (p 2))
-      (logg-key-val "method" (p 0))
-      (logg-key-val "url" (p 1))
-      (logg-key-val "protocol" (p 2)))
-    (while (and
-            (set 'line (read-line conn))
-            (not (net-error))
-            (!= line ""))
-      ;;(dbg:expr line)
-      (set 'p (parse line ": ")) ;&&&
-      (if (= (length p) 2)
-          (set 'key (lower-case (p 0))
-               'val (p 1)))
-      (logg-key-val key val)
-      (WS_Headers_request key val)
-      ))
-  (logg:info "[...request]")
-  (if (net-error)
-      (fm:advance "get_request_error")
-      (fm:advance "rec_opt_content")))
+    (if (not (nil? line))
+        (begin
+          (set 'p (parse line " "))
+          (when (= (length p) 3)
+            (WS_Headers_request "method" (p 0))
+            (WS_Headers_request "url" (p 1))
+            (WS_Headers_request "protocol" (p 2))
+            (logg-key-val "method" (p 0))
+            (logg-key-val "url" (p 1))
+            (logg-key-val "protocol" (p 2)))
+          (while (and
+                  (set 'line (read-line conn))
+                  (not (net-error))
+                  (!= line ""))
+            ;;(dbg:expr line)
+            (set 'p (parse line ": ")) ;&&&
+            (if (= (length p) 2)
+                (set 'key (lower-case (p 0))
+                     'val (p 1)))
+            (logg-key-val key val)
+            (WS_Headers_request key val)
+            )))
+    (logg:info "[...request]")
+    (if (or (nil? line) (net-error))
+        (begin
+          ;; http://stackoverflow.com/questions/5640144/c-how-to-use-select-to-see-if-a-socket-has-closed
+          (if (and (not (net-error))      ; see link above and ..
+                   (= (net-peek conn) 0)) ; .. interpreter code
+              (logg:warn "Connection closed by other end."))
+          (fm:advance "get_request_error"))
+        (fm:advance "rec_opt_content"))))
 
 (define (do-net-peek conn , giveup_flag available nothing_count)
   (do-while (and (not giveup_flag) (= available 0))
@@ -1094,7 +1101,12 @@
        ;;((= curr "get_request") -> factored out
        ;;
        ((= curr "get_request_error")
-        (logg:error "reading request failed.")
+        (logg:error (append
+                     "Reading request failed"
+                     (if (net-error)
+                         (append ": " (net-error))
+                         "")
+                     "."))
         (:advance fm_main "cleanup_after_request_error"))
 
        ((= curr "compute_response")
@@ -1110,7 +1122,9 @@
 
        ((or (= curr "cleanup_after_request")
             (= curr "cleanup_after_request_error"))
-        (if conn (net-close conn))
+        (when conn ; (dbg:expr-loc "cleanup" conn)
+          (net-close conn)
+          (set 'conn nil))
         (cleanup)
         (logg:info (dbg:expr-str-sep ((:stats fm_main))))
         (logg:info (dbg:expr-str-sep ((:stats fm_res))))
