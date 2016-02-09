@@ -315,10 +315,15 @@
 (define (logg-key-val key val)
   (logg:info (format "%20s  ->  %s" key val)))
 
+;;todo make it even more robust: read-line may wait forever for a "\n"
 (define (rec-n-parse-header-http fm)
   (logg:info "[request...]")
-  (local (line key val)
-    (set 'line (read-line conn))
+  (local (ready line key val)
+    (set 'ready (net-select conn "r" 1000000))
+    (dbg:expr ready (net-peek conn))
+    (if (not ready)
+        (dbg:expr (net-error))
+        (set 'line (read-line conn)))
     (if (not (nil? line))
         (begin
           (set 'p (parse line " "))
@@ -330,8 +335,8 @@
             (logg-key-val "url" (p 1))
             (logg-key-val "protocol" (p 2)))
           (while (and
+                  (set 'ready (net-select conn "r" 1000000))
                   (set 'line (read-line conn))
-                  (not (net-error))
                   (!= line ""))
             ;;(dbg:expr line)
             (set 'p (parse line ": ")) ;&&&
@@ -342,15 +347,17 @@
             (WS_Headers_request key val)
             )))
     (logg:info "[...request]")
-    (if (or (nil? line) (net-error))
+    (if (or (nil? line) (not ready))
         (begin
           ;; http://stackoverflow.com/questions/5640144/c-how-to-use-select-to-see-if-a-socket-has-closed
-          (if (and (not (net-error))      ; see link above and ..
-                   (= (net-peek conn) 0)) ; .. interpreter code
-              (logg:warn "Connection closed by other end."))
-          (fm:advance "get_request_error"))
+          (if (and ready (= (net-peek conn) 0)) ; see link above and ..
+              (logg:warn "Connection closed by other end.") ; ..interpreter code
+              (and (not ready) (not (net-error)))
+              (logg:warn "Connection timed-out."))
+          (fm:advance "get_request_error")) ; net-error logged there
         (fm:advance "rec_opt_content"))))
 
+;;todo reimplement with select
 (define (do-net-peek conn , giveup_flag available nothing_count)
   (do-while (and (not giveup_flag) (= available 0))
             (setq available (net-peek conn))
