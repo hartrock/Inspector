@@ -7,27 +7,33 @@
     <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
 
-    <!-- Create a simple CodeMirror instance -->
-    <link rel="stylesheet" href="CodeMirror-5.7.0/lib/codemirror.css">
-    <script src="CodeMirror-5.7.0/lib/codemirror.js"></script>
-    <script src="CodeMirror-5.7.0/mode/scheme/scheme.js"></script>
     <script src="jquery-2.1.4.js"></script>
 
-    <script src="tree.jquery.js"></script>
-    <link rel="stylesheet" href="jqtree.css" />
-
-    <link rel="stylesheet" href="inspector.css">
-    <link rel="stylesheet" href="console.css">
-    <script src="egBase.js" charset="utf-8"></script>
-    <script src="symbolsTree.js" charset="utf-8"></script>
-    <script src="console.js"></script>
-    <script> 
+    <script charset="utf-8">
+      /* load include part of html */
       $(function(){/* todo: rename file */
         $("#div_treeHelp_common").load("tree_help_common.html.inc"); 
       });
     </script>
+
+    <script src="CodeMirror-5.7.0/lib/codemirror.js"></script>
+    <script src="CodeMirror-5.7.0/mode/scheme/scheme.js"></script>
+    <link rel="stylesheet" href="CodeMirror-5.7.0/lib/codemirror.css">
+
+    <script src="tree.jquery.js"></script>
+    <link rel="stylesheet" href="jqtree.css" />
+
     <script src="interact.js" charset="utf-8"></script>
+
+    <script src="egBase.js" charset="utf-8"></script>
+    <script src="symbolsTree.js" charset="utf-8"></script>
+    <script src="console.js"></script>
+    <link rel="stylesheet" href="console.css">
+
+    <link rel="stylesheet" href="inspector.css">
+
   </head>
+
   <body id="strong">
     <table id="table_main">
       <tr id="tr_top">

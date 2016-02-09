@@ -92,60 +92,70 @@
     });
   }
 
-  var jqxhr = $.getJSON(symsURL, function(data) {
-    is.init_setSymbolsTreeSelector(treeSel);
-    is.createInitialContextFolders(data);
-  })
-    .done(function() {
-      //eg.log( ".done" );
-      $(treeSel).bind(
-        'tree.dblclick',
-        function(event) {
-          //console.log(event.node);
-          var ID = event.node.ID;
-          if (is.isListSym(ID)) {
-            var symsURL = symsURLFor(ID);
-            $.getJSON(symsURL, function(data) {
-              //console.log(data);
-              is.createTopFolder(ID, eg.keys(data));
-            });
-          }
-        });
-      $(document).bind('keydown.inspector', $.proxy(function( event ) {
-        //console.log("$(document.activeElement): ", $(document.activeElement),
-        //            "event: ", event);
-        if ($(document.activeElement).is('textarea,input,select')) {
-          return true;
-        }
-        var node = $(treeSel).tree('getSelectedNode');
-        if (! node || node.folderFlag) {
-          return true;
-        }
-        if (event.which === 13) { // Return
-          event.preventDefault();
-          var ID = node.ID;
-          if (is.isListSym(ID)) {
-            var symsURL = symsURLFor(ID);
-            $.getJSON(symsURL, function(data) {
-              is.createTopFolder(ID, eg.keys(data));
-            });
-          }
-        }
-      }));
-      // for reaching node given by hash:
-      $(window).trigger('hashchange');
+  function fillWithSymbolsFromJSONURL() {
+    var jqxhr = $.getJSON(symsURL, function(data) {
+      eg.log(symsURL, treeSel)
+      is.init_setSymbolsTreeSelector(treeSel);
+      is.createInitialContextFolders(data);
     })
-    .done(checkForPingPong)
-    .fail(function(data) {
-      var urlVars = eg.getURLVars();
-      $(treeSel).after("<h1>Problem</h1>\n"
-                       + "<p>" + data.responseText + "</p>");
-      console.log( ".fail" );
-    })
-    .always(function() {
-      //console.log( ".always" );
-    });
+      .done(function() {
+        eg.log( ".done" );
+        $(treeSel).bind(
+          'tree.dblclick',
+          function(event) {
+            //console.log(event.node);
+            var ID = event.node.ID;
+            if (is.isListSym(ID)) {
+              var symsURL = symsURLFor(ID);
+              $.getJSON(symsURL, function(data) {
+                //console.log(data);
+                is.createTopFolder(ID, eg.keys(data));
+              });
+            }
+          });
+        $(document).bind('keydown.inspector', $.proxy(function( event ) {
+          //console.log("$(document.activeElement): ", $(document.activeElement),
+          //            "event: ", event);
+          if ($(document.activeElement).is('textarea,input,select')) {
+            return true;
+          }
+          var node = $(treeSel).tree('getSelectedNode');
+          if (! node || node.folderFlag) {
+            return true;
+          }
+          if (event.which === 13) { // Return
+            event.preventDefault();
+            var ID = node.ID;
+            if (is.isListSym(ID)) {
+              var symsURL = symsURLFor(ID);
+              $.getJSON(symsURL, function(data) {
+                is.createTopFolder(ID, eg.keys(data));
+              });
+            }
+          }
+        }));
+        // for reaching node given by hash:
+        $(window).trigger('hashchange');
+      })
+      .done(checkForPingPong)
+      .fail(function(data) {
+        var urlVars = eg.getURLVars();
+        $(treeSel).after("<h1>Problem</h1>\n"
+                         + "<p>" + data.responseText + "</p>");
+        console.log( ".fail" );
+      })
+      .always(function() {
+        //console.log( ".always" );
+      });
+    is.init_honorHash();
+  }
 
-  is.init_honorHash();
+  $(document).ready(function(){
+    fillWithSymbolsFromJSONURL();
+  });
 
+  // export
+  is.fillWithSymbolsFromJSONURL = fillWithSymbolsFromJSONURL;
+  
 }(Inspector))
+//EOF

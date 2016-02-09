@@ -1236,7 +1236,6 @@ var Inspector = Inspector || {};
   is.performIntrospection_symbolsMap = performIntrospection_symbolsMap;
   is.performIntrospection_symbolsInLists = performIntrospection_symbolsInLists;
   is.performIntrospection_symbolsInListsQuoted = performIntrospection_symbolsInListsQuoted;
-  is.init = init;
   is.assert = assert;
   is.log_err = log_err;
   is.log_warn = log_warn;
@@ -1244,23 +1243,25 @@ var Inspector = Inspector || {};
   is.log_dbg = log_dbg;
   is.log_dbgSTO = log_dbgSTO;
   is.log_dbgSTR = log_dbgSTR;
-}(Inspector));
 
-////
-$(document).ready(function(){
-  alert("Good news: Inspector's webserver is running.\n"
-        + "\n"
-        + "Security warning:\n"
-        + "----\n"
-        + "This application is capable to "
-        + "*** look into and *manipulate* your system ***.\n"
-        + "So you should:\n"
-        + "- *close* port " + location.port
-        + " in use here to the outside by some firewall, to\n"
-        + "- *** be *not* accessible from outside ***"
-        + " your host or - at least - private network.\n"
-        + "You have been warned!\n"
-        + "----\n");
-  Inspector.init();
-});
+  ////
+  $(document).ready(function(){
+    //$(window).on('load', function(){
+    alert("Good news: Inspector's webserver is running.\n"
+          + "\n"
+          + "Security warning:\n"
+          + "----\n"
+          + "This application is capable to "
+          + "*** look into and *manipulate* your system ***.\n"
+          + "So you should:\n"
+          + "- *close* port " + location.port
+          + " in use here to the outside by some firewall, to\n"
+          + "- *** be *not* accessible from outside ***"
+          + " your host or - at least - private network.\n"
+          + "You have been warned!\n"
+          + "----\n");
+    init();
+  });
+
+}(Inspector));
 // EOF
