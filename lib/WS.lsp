@@ -315,11 +315,13 @@
 (define (logg-key-val key val)
   (logg:info (format "%20s  ->  %s" key val)))
 
+;; Measures to quickly timeout accepted preconnections without getting a header.
+(constant 'requestHeader_timeout (* 100 1000)) ; 100ms
 ;;todo make it even more robust: read-line may wait forever for a "\n"
 (define (rec-n-parse-header-http fm)
   (logg:info "[request...]")
   (local (ready line key val)
-    (set 'ready (net-select conn "r" 1000000))
+    (set 'ready (net-select conn "r" requestHeader_timeout))
     (dbg:expr ready (net-peek conn))
     (if (not ready)
         (dbg:expr (net-error))
@@ -335,7 +337,7 @@
             (logg-key-val "url" (p 1))
             (logg-key-val "protocol" (p 2)))
           (while (and
-                  (set 'ready (net-select conn "r" 1000000))
+                  (set 'ready (net-select conn "r" requestHeader_timeout))
                   (set 'line (read-line conn))
                   (!= line ""))
             ;;(dbg:expr line)
@@ -796,8 +798,8 @@
        'http_extra_header_str
        (append
         (create-headers
-         '(("upgrade" "websocket")
-           ("connection" "upgrade")))
+         '(("Upgrade" "websocket")
+           ("Connection" "Upgrade")))
         (create-header "Sec-WebSocket-Accept" accept_be64)))
   (h_handle_finalize)
   ;;(dbg:expr conn)
@@ -1010,6 +1012,9 @@
    (or http_extra_header_str "")
    (if http_extra_response_headers_hook ; for injecting extra response headers
        (create-headers (http_extra_response_headers_hook))
+       "")
+   (if (!= http_status 101) ; longer lasting websocket and no forked request ..
+       (create-header "Connection" "close") ; .. handling for other resources
        "")
    (create-end-header)))
 ;; for reuse by handle_websocket_upgrade

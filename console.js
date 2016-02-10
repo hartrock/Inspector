@@ -595,7 +595,8 @@ var Inspector = Inspector || {};
 
   function onClose(evt)
   {
-    log_info("DISCONNECTED");
+    log_error("Websocket connection to webserver disconnected; code: "
+              + evt.code + ".");
   }
 
   //todo: try class
@@ -1206,6 +1207,13 @@ var Inspector = Inspector || {};
       window.location.href = window.location.origin + "/" + urlFragment;
     });
   }
+  function close_websocket() {
+    if (websocket) {
+      //console.log("websocket.close()..");
+      websocket.close();
+      //console.log("..websocket.close()");
+    }
+  }
   function init() {
     topFrac = 0.7;
     if (window.location.pathname === "/consoleAlone.html") {
@@ -1230,6 +1238,8 @@ var Inspector = Inspector || {};
       inRemoteStartup = true;
       performControl_startRemote($("#remoteArguments").val());
     });
+    // may have advantages in some cases
+    $(window).on('beforeunload', close_websocket);
   }
   // exports
   is.performEvaluation = performEvaluation;
@@ -1243,6 +1253,7 @@ var Inspector = Inspector || {};
   is.log_dbg = log_dbg;
   is.log_dbgSTO = log_dbgSTO;
   is.log_dbgSTR = log_dbgSTR;
+  is.close_websocket = close_websocket;
 
   ////
   $(document).ready(function(){
