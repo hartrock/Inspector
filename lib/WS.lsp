@@ -316,7 +316,7 @@
   (logg:info (format "%20s  ->  %s" key val)))
 
 ;; Measures to quickly timeout accepted preconnections without getting a header.
-(constant 'requestHeader_timeout (* 100 1000)) ; 100ms
+(constant 'requestHeader_timeout (* 10 1000)) ; 10ms
 ;;todo make it even more robust: read-line may wait forever for a "\n"
 (define (rec-n-parse-header-http fm)
   (logg:info "[request...]")
