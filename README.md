@@ -69,13 +69,13 @@ After starting Inspector's webserver a remote can be controlled and its symbols 
 
 Remote Inspector is the main application - 'working horse' - here.
 
-Remote Inspector consists of three parts:
-- Inspector's webserver for serving its GUI runs as a newLISP process, to be started by the user;
-- Remote Inspector's GUI is running inside a browser window as a Javascript process;
-- Remote Inspector's remote is a newLISP process to be visualized and controlled by its GUI.
+Remote Inspector (RI) consists of three parts:
+- Inspector's webserver for serving RI's GUI runs as a newLISP process, to be started by the user;
+- RI's GUI is running inside a browser window with Javascript;
+- RI's remote is a newLISP process to be visualized and controlled by RI's GUI.
 
-Communication between remote process (newLISP) and GUI process (Javascript) goes via an intermediate webserver process (newLISP).
-Because this longer lasting and highly interactive communication will be handled by a forked webserver process, multiple browser window GUIs each having its own remote are possible (so it becomes possible to compare behavior of different remote processes).
+Communication between remote process (newLISP) and GUI (Javascript) goes via an intermediate webserver process (newLISP).
+Because this longer lasting and highly interactive communication will be handled by a forked webserver process, multiple browser window GUIs, each having its own remote, are possible (this allows to compare properties of different remote newLISPs running at the same time).
 
 
 #### General features of Remote Inspector
