@@ -28,12 +28,10 @@ Directly to [How to start](#how-to-start).
 ![](screenshot_RI.png)
 
 #### Remote Inspector: changed layout
-
 Note: mouse pointer at bottom-right corner of remote console gives resize handle.
 ![](screenshot_RI_changedLayout.png)
 
 #### Remote Inspector: debugging session
-
 ![](screenshot_RI_debugging.png)
 
 #### Inspector's webserver's symbols (serving Remote Inspector GUI)
@@ -84,7 +82,7 @@ Because this longer lasting and highly interactive communication will be handled
 
 #### General features of Remote Inspector
 
-- handles newLISP interrupt and debug mode;
+- handles newLISP debug and interrupt mode;
 - multiple remotes: handles multiple browser windows/tabs each having its own remote;
 - flexible layout: after resizing remote console - by dragging a _handle_ at its right/bottom borders - all other widgets are adapted to it;
 - communication channels are:
@@ -135,7 +133,7 @@ Remote symbols view features:
 
 Inspector's webserver provides all needed for Remote Inspector:
 - standalone webserver (not something needing another webserver as frontend);
-- websocket protocol implementation using forked webserver processes (to be usable in multiple windows/tabs;
+- websocket protocol implementation using forked webserver processes (to be usable in multiple windows/tabs);
 - normal features like serving static resources (currently all are preloaded in memory and served from there);
 - special Remote Inspector features for controlling a remote newLISP process.
 
@@ -144,7 +142,7 @@ There are special features for another application, too.
 
 #### Important Note
 
-As it is now (and this may never change!), it's *not* suited for opening its served port to the wild. Please look into [Security Warning](security-warning), which also applies to Inspector's webserver in general (as it is now).
+As it is now (and this may never change!), it's *not* suited for opening its served port (default `8080`) to the wild. Please look into [Security Warning](security-warning), which also applies to Inspector's webserver in general.
 
 
 
@@ -152,7 +150,7 @@ As it is now (and this may never change!), it's *not* suited for opening its ser
 
 This application is capable to look into and manipulate your system.
 So you should:
-- close port 8080 (or another one) in use here to the outside by some firewall, to
+- close port `8080` (or another one) in use here to the outside by some firewall, to
 - be not accessible from outside your host or - at least - private network.
 
 You have been warned!
@@ -201,7 +199,7 @@ Notes:
      `http:localhost:8080/symbols.html?file=/tmp/snapshot.json` (*)
    from a browser (works under Linux, for other OSes another filepath may be needed).
 
-Needed infrastructure for Inspector - `./startIt.lsp` - is quite big, but for snapshot'ing - `./snapshot.lsp` - only loading of two modules is needed.
+Needed infrastructure for Inspector - `./startIt.lsp` - is quite big, but for snapshot'ing - `./snapshot.lsp` - only loading of much fewer code is needed.
 
 
 
@@ -235,6 +233,8 @@ But nevertheless Inspector may be of interest for others
 
 TODO.
 
+#### Minimal effort maximal win
+
 #### Performance
 
 #### Architecture
@@ -246,7 +246,7 @@ TODO.
 Note: 'less advanced' does not necessarily mean 'less work', but lesser work and risk to get it running as 'more advanced'.
 
 
-#### _Done_ ideas for further development
+#### _Done_ Ideas for further development
 
 Some ideas have been realized.
 
@@ -296,4 +296,4 @@ For a full-featured debugger probably a very low-level communication hook in the
 
 ### Footnotes
 
-(*) Another port as 8080 could be used, too.
+(*) Another port as `8080` (default) could be used, too.
