@@ -58,7 +58,7 @@ This webserver controls and communicates with a remotely started newLISP instanc
 - communication between webserver and remote processes (both newLISP) is done by pipes.
 
 After starting Inspector's webserver a remote can be controlled and its symbols can be explored with Remote Inspector GUI by loading
-  `http://localhost:8080/inspector.html` (*)
+  `http://localhost:8080/inspector.html` (1)
 ; an overview page will be shown by visiting
   `http://localhost:8080/`
 .
@@ -157,7 +157,7 @@ You have been warned!
 
 ### How to start
 
-Inspector runs with newLISP 10.7.0 (stable) (**); it has been tested under Linux (Debian) with browsers Iceweasel (Firefox) and Chromium.
+Inspector runs with newLISP 10.7.0 (stable) (2); it has been tested under Linux (Debian) with browsers Iceweasel (Firefox) and Chromium.
 
 Clone this repository and enter it (`REPO_DIR` usually will be `Inspector` somewhere in your filesystem):  
      `cd REPO_DIR`  
@@ -175,7 +175,7 @@ Explained here:
    (starting Inspector's webserver).
 
 2. Load  
-     `http://localhost:8080/inspector.html` (*)  
+     `http://localhost:8080/inspector.html` (1)  
    from a browser (firefox works) to get Remote Inspector's GUI.
 
 Notes:
@@ -194,7 +194,7 @@ Notes:
      `./snapshot.lsp`  
    (this makes a snapshot of a freshly started newLISP instance).
 3. Load  
-     `http:localhost:8080/symbols.html?file=/tmp/snapshot.json` (*)
+     `http:localhost:8080/symbols.html?file=/tmp/snapshot.json` (1)
    from a browser (works under Linux, for other OSes another filepath may be needed).
 
 Needed infrastructure for Inspector - `./startIt.lsp` - is quite big, but for snapshot'ing - `./snapshot.lsp` - only loading of much fewer code is needed.
@@ -294,5 +294,5 @@ For a full-featured debugger probably a very low-level communication hook in the
 
 ### Footnotes
 
-(*) Another port as `8080` (default) could be used, too.
-(*\*) Inspector may run with older newLISP versions, too; especially v10.6.* is a good candidate.
+(1) Another port as `8080` (default) could be used, too.
+(2) Inspector may run with older newLISP versions, too; especially v10.6.* is a good candidate.
