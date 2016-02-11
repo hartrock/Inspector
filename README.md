@@ -1,5 +1,3 @@
-...ongoing changes before v0.4...
-
 # Inspector
 
 For inspecting a newLISP system.
