@@ -159,7 +159,7 @@ You have been warned!
 
 ### How to start
 
-Inspector runs with newLISP 10.7.0 (stable); it has been tested under Linux (Debian).
+Inspector runs with newLISP 10.7.0 (stable) (**); it has been tested under Linux (Debian) with browsers Iceweasel (Firefox) and Chromium.
 
 Clone this repository and enter it (`REPO_DIR` usually will be `Inspector` somewhere in your filesystem):  
      `cd REPO_DIR`  
@@ -297,3 +297,4 @@ For a full-featured debugger probably a very low-level communication hook in the
 ### Footnotes
 
 (*) Another port as `8080` (default) could be used, too.
+(**) Inspector may run with older newLISP versions, too; especially v10.6.* is a good candidate.
