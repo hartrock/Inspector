@@ -1,6 +1,3 @@
-;;todo: check
-(context 'MAIN:assert)
-
 (context 'Util)
 
 ;;;; pos in vec

@@ -49,12 +49,16 @@
         <td>jump to <span class="code_snippet">FOOPReference:delete-all-refs</span> symbol inside <span class="code_snippet">FOOPReference</span> context folder</td>
       </tr>
       <tr>
-        <td class="URL"><a href="symbols.html#Help">symbols.html#Help</a></td>
-        <td class="URL">jump to Help</td>
+        <td class="URL"><a href="symbols-JSON">symbols-JSON</a></td>
+        <td class="URL">show all symbols of all contexts in JSON format</td>
       </tr>
       <tr>
-        <td class="URL"><a href="symbols.html?file=/tmp/snapshot.json">symbols.html?file=/tmp/snapshot.json</a></td>
-        <td class="URL">load symbols from a snapshot file (a jump hash as URL suffix is possible, too)</td>
+        <td class="URL"><a href="symbols-JSON?inList=Class:Class">symbols-JSON?inList=Class:Class</a></td>
+        <td class="URL">show all symbols referenced by some lambda/macro/list (here <span class="code_snippet">Class:Class)</span> in JSON format</td>
+      </tr>
+      <tr>
+        <td class="URL"><a href="symbols.html#Help">symbols.html#Help</a></td>
+        <td class="URL">jump to this Help</td>
       </tr>
     </table>
 
@@ -63,32 +67,12 @@
         <th colspan="2">Special OPs</th>
       </tr>
       <tr>
+        <td class="URL"><a href="symbols.html?file=/tmp/snapshot.json">symbols.html?file=/tmp/snapshot.json</a></td>
+        <td class="URL">load symbols from a snapshot file made by a remote newLISP process like in e.g. <span class="command_snippet">./snapshot.lsp</span> (a jump hash as URL suffix is possible, too)</td>
+      </tr>
+      <tr>
         <td class="URL"><a href="leave">leave</a></td>
-        <td class="URL">leave Inspector server process (to be (re)loaded three times to finish <span class="command_snippet">startIt_loop.lsp</span> loop)</td>
-      </tr>
-      <tr>
-        <td class="URL"><a href="symbols.html?pingPong">symbols.html?pingPong</a></td>
-        <td class="URL">ping-pong between Inspector server process and browser GUI (see below)</td>
-      </tr>
-      <tr>
-        <td class="URL"><a href="symbols-JSON">symbols-JSON</a></td>
-        <td class="URL">show all symbols of all contexts in JSON format</td>
-      </tr>
-      <tr>
-        <td class="URL"><a href="symbols-JSON?inList=Class:Class">symbols-JSON?inList=Class:Class</a></td>
-        <td class="URL">show all symbols referenced by some lambda/macro/list (here <span class="code_snippet">Class:Class)</span> in JSON format</td>
-      </tr>
-    </table>
-
-    <table id="ping-pong_mode">
-      <tr>
-        <th colspan="1">Ping-pong mode</th>
-      </tr>
-      <tr>
-        <td>Just run
-          <br>&nbsp;&nbsp;<span class="command_snippet">./startIt_pingPong.lsp</span><br>
-          : in terminal output there is info about how to proceed.
-        </td>
+        <td class="URL">leave Inspector webserver process (to be restarted by <span class="code_snippet">(Inspector:start)</span> in <span class="command_snippet">./startIt.lsp</span> console)</td>
       </tr>
     </table>
   </div>

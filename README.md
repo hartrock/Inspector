@@ -22,7 +22,7 @@ Directly to [How to start](#how-to-start).
 
 
 
-### Screenshots v0.4
+### Screenshots
 
 #### Remote Inspector: just after start
 ![](screenshot_RI.png)
@@ -39,14 +39,8 @@ Note: mouse pointer at bottom-right corner of remote console gives resize handle
 #### Inspector's webserver's symbols (serving Remote Inspector GUI)
 ![](screenshot_symbols_webserver.png)
 
-
-### Screenshots v0.3
-
-#### Viewing Inspector's symbols
-![](screenshot_inspect_self.png)
-
-#### Viewing snapshot'ed symbols of _another_ newLISP process
-![](screenshot_inspect_snapshot.png)
+#### Snapshot'ed symbols of some other newLISP process
+![](screenshot_symbols_snapshot.png)
 
 
 
@@ -92,6 +86,7 @@ Because this longer lasting and highly interactive communication will be handled
 
 - handles newLISP interrupt and debug mode;
 - multiple remotes: handles multiple browser windows/tabs each having its own remote;
+- flexible layout: after resizing remote console - by dragging a _handle_ at its right/bottom borders - all other widgets are adapted to it;
 - communication channels are:
   - a (bidirectional) websocket connection between browser window process (Javascript) and (forked) webserver process (newLISP),
   - pipes between webserver and remote processes (both newLISP);
