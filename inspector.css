@@ -106,4 +106,10 @@ span.is_symProps {
     border: 1px solid;
     padding: 0.5em;
 }
+
+/* show WS in remote console */
+#wrapper_console .CodeMirror span:not(.promptSingle) {
+  background-color: #f0f0f0;
+}
+
 /* EOF */
