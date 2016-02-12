@@ -595,8 +595,8 @@ var Inspector = Inspector || {};
 
   function onClose(evt)
   {
-    log_error("Websocket connection to webserver disconnected; code: "
-              + evt.code + ".");
+    log_err("Websocket connection to webserver disconnected; code: "
+            + evt.code + ".");
   }
 
   //todo: try class
