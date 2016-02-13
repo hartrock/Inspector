@@ -107,9 +107,11 @@ span.is_symProps {
     padding: 0.5em;
 }
 
-/* show WS in remote console */
-#wrapper_console .CodeMirror span:not(.promptSingle) {
+/* text BG in remote windows */
+#wrapper_remote_console.showTextBG .CodeMirror span:not(.promptSingle) {
   background-color: #f0f0f0;
 }
-
+#wrapper_remote_stderr.showTextBG .CodeMirror span:not(.promptSingle) {
+  background-color: #f0f0f0;
+}
 /* EOF */

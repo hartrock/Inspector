@@ -20,7 +20,7 @@ body {
     border: 1px solid #eee;
 /*    height: 50em; */
 }
-#wrapper_console .CodeMirror {
+#wrapper_remote_console .CodeMirror {
 /*
     -webkit-box-sizing: border-box;
        -moz-box-sizing: border-box;
@@ -46,10 +46,10 @@ body {
 .promptError {
     background-color: lightpink;
 }
-#wrapper_console.waitCursor {
+#wrapper_remote_console.waitCursor {
     cursor: wait;
 }
-#wrapper_console.waitCursor .CodeMirror-lines {
+#wrapper_remote_console.waitCursor .CodeMirror-lines {
     cursor: wait;
 }
 

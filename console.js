@@ -246,7 +246,7 @@ var Inspector = Inspector || {};
     setWidthHeight(a_width, a_height);
 
     // adapt symbol tree
-    var leftHeight = $("#wrapper_console").height();
+    var leftHeight = $("#wrapper_remote_console").height();
     $("#div_symbolsView").height(leftHeight);
     var bottomWidth = $("#wrapper_log").width();
     $("#div_symbolsView").width(bottomWidth);
@@ -268,7 +268,7 @@ var Inspector = Inspector || {};
   }
   function init_stderr()
   {
-    var output = document.getElementById("stderr");
+    var output = document.getElementById("remote_stderr");
     err_editor = CodeMirror.fromTextArea(output, {
       lineNumbers: true,
       mode: "text",
@@ -493,7 +493,7 @@ var Inspector = Inspector || {};
   }
   function init_console()
   {
-    var textarea = document.getElementById("console");
+    var textarea = document.getElementById("remote_console");
     console_editor = CodeMirror.fromTextArea(textarea, {
       lineNumbers: true,
       //mode: "scheme",
@@ -611,12 +611,12 @@ var Inspector = Inspector || {};
   }
   
   function lockConsole() {
-    document.querySelector('#wrapper_console').classList.add('waitCursor');
+    document.querySelector('#wrapper_remote_console').classList.add('waitCursor');
     console_editor_hadFocus.push(console_editor.hasFocus());
     console_editor.setOption("readOnly", "nocursor");
   }
   function unlockConsole(cleanFlag) {
-    document.querySelector('#wrapper_console').classList.remove('waitCursor');
+    document.querySelector('#wrapper_remote_console').classList.remove('waitCursor');
     console_editor.setOption("readOnly", false);
     console_editor_hadFocus.pop() && console_editor.focus();
     if (cleanFlag) {
@@ -794,7 +794,6 @@ var Inspector = Inspector || {};
           if (evalFinishedFlag) {
             debugPromptFlag = rr.promptType === "debug";
             interruptPromptFlag = rr.promptType === "interrupt";
-            console.log(rr, interruptPromptFlag);
             // introspection possible at normal and debug prompt, but ..
             if (hasSymbolsViewFlag
                 && ! interruptPromptFlag) { // .. not after interrupt
@@ -1133,7 +1132,7 @@ var Inspector = Inspector || {};
       return;
     }
     var start_width, start_height, last_width, last_height;
-    $("#wrapper_console .CodeMirror").addClass('resize-drag');
+    $("#wrapper_remote_console .CodeMirror").addClass('resize-drag');
     interact('.resize-drag')
       .draggable({
         onmove: window.dragMoveListener,
@@ -1207,13 +1206,29 @@ var Inspector = Inspector || {};
       window.location.href = window.location.origin + "/" + urlFragment;
     });
   }
-  function close_websocket() {
-    if (websocket) {
-      //console.log("websocket.close()..");
-      websocket.close();
-      //console.log("..websocket.close()");
+  
+  // WS in remote console
+  function check_cb_showTextBG(cb, wrapperCM) {
+    if (cb.prop('checked')) {
+      wrapperCM.addClass('showTextBG');
+    } else {
+      wrapperCM.removeClass('showTextBG');
     }
   }
+  function init_cb_showTextBG(cb, wrapperCM) {
+    cb.click(function(ev){
+      check_cb_showTextBG(cb, wrapperCM);
+    });
+    // first time check (reload may check it on)
+    check_cb_showTextBG(cb, wrapperCM);
+  }
+  
+  function close_websocket() {
+    if (websocket) {
+      websocket.close();
+    }
+  }
+
   function init() {
     topFrac = 0.7;
     if (window.location.pathname === "/consoleAlone.html") {
@@ -1238,6 +1253,8 @@ var Inspector = Inspector || {};
       inRemoteStartup = true;
       performControl_startRemote($("#remoteArguments").val());
     });
+    init_cb_showTextBG($("#cb_showTextBG_remote_console"), $("#wrapper_remote_console"));
+    init_cb_showTextBG($("#cb_showTextBG_remote_stderr"), $("#wrapper_remote_stderr"));
     // may have advantages in some cases
     $(window).on('beforeunload', close_websocket);
   }

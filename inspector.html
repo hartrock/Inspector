@@ -37,8 +37,8 @@
   <body id="strong">
     <table id="table_main">
       <tr id="tr_top">
-        <td id="wrapper_console" class="colLeft">
-          <textarea id="console"></textarea>
+        <td id="wrapper_remote_console" class="colLeft">
+          <textarea id="remote_console"></textarea>
         </td>
         <td class="colRight">
           <div id="div_symbolsView">
@@ -55,8 +55,17 @@
             <tr>
               <td id="td_sepAreaLeft">
                 <span>
-                  ↑ stdout remote      ↓ stderr remote
+                        ↑ stdout remote  
                 </span>
+                <input type="checkbox" id="cb_showTextBG_remote_console" name="cb_showTextBG" title="If checked, show text background of stdout: good for making whitespace visible.">
+                <label for="cb_showTextBG_remote_console" title="If checked, show text background of stdout: good for making whitespace visible.">text BG</label>
+                </input>
+                <span>
+                        ↓ stderr remote  
+                </span>
+                <input type="checkbox" id="cb_showTextBG_remote_stderr" name="cb_showTextBG_remote_stderr" title="If checked, show text background of stderr: good for making whitespace visible.">
+                <label for="cb_showTextBG_remote_stderr" title="If checked, show text background of stderr: good for making whitespace visible.">text BG</label>
+                </input>
               </td>
               <td id="td_sepAreaMiddle">
                 <input type="text"
@@ -90,8 +99,8 @@
         </td>
       </tr>
       <tr id="tr_bottom">
-        <td id="td_stderr" class="colLeft">
-          <textarea id="stderr"></textarea>
+        <td id="wrapper_remote_stderr" class="colLeft">
+          <textarea id="remote_stderr"></textarea>
         </td>
         <td id="wrapper_log" class="colRight">
           <textarea id="log"></textarea>
