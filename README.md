@@ -6,10 +6,10 @@ Directly to [How to start](#how-to-start).
 
 ### News
 
-- v0.4.1 [enh] text BG switch for remote console windows
+- v0.4.1 [enh] text BG switch for remote console windows  
   Good for visualizing WS.
 
-- v0.4: Working horse application of Inspector is 'Remote Inspector' now (big changes in comparison to v0.3)
+- v0.4: Working horse application of Inspector is 'Remote Inspector' now (big changes in comparison to v0.3)  
   An adiitional newLISP process will be started as a remote (a former one is Inspector's webserver process serving the browser GUI), which will be controlled by Remote Inspector's GUI.
 
   See [Remote Inspector](#remote-inspector) for a description.
