@@ -292,4 +292,4 @@ For a full-featured debugger probably a very low-level communication hook in the
 <a name="fn_1">(1)</a>
 Another port as `8080` (default) could be used, too.  
 <a name="fn_2">(2)</a>
-Inspector may run with older newLISP versions, too; especially v10.6.* is a good candidate.  
+Inspector may run with older newLISP versions, too; especially v10.6.* are good candidates.  
