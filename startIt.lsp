@@ -14,7 +14,7 @@
                    "." ; CWD
                    (0 -1 appdir))) ; rm trailing "/"
   ;; appdir to be used as basedir: rel modules/ and lib/
-  (set 'basedir appdir)
+  (set 'basedir (append appdir "/Base"))
 
   (load (append basedir "/modules/Init.lsp"))
   (set 'Init:Init true))
