@@ -1,0 +1,36 @@
+(context 'Tst)
+
+(define (msg (str ""))
+  (println ">>> " str))
+(define (msg2 (str ""))
+  (println ">>>>>> " str))
+(define (Tst:name)
+  ((main-args) 1))
+;;
+(define (Tst:begin (what (Tst:name)))
+  (msg (string "(" what "...")))
+(define (end (what (Tst:name)))
+  (Tst:stats)
+  (msg (string "..." what ")"))
+  (when (not (= (last (main-args)) "--enter-interpreter"))
+    (exit (if (null? Tst:FAIL_count)
+              0
+              1))))
+;;
+(define (Tst:init)
+  (set 'OK_count 0 'FAIL_count 0))
+(define (OK)
+  (++ OK_count)
+  (msg "-> OK."))
+(define (FAIL)
+  (++ FAIL_count)
+  (msg "-> FAILURE!"))
+(define (check val)
+  (if val (OK) (FAIL)))
+(define (Tst:stats (what (Tst:name)))
+  (msg)
+  (msg2 (string "[" what "] OK: " OK_count ", FAILURE: " FAIL_count "."))
+  (msg))
+
+(Tst:init)
+;;EOF

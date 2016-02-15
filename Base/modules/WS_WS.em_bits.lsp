@@ -1,0 +1,7 @@
+;; bit(s) unset/set; avoid setting these macros twice (DNW)
+(context 'WS_WS)
+(macro (bnull? Mask Bits)
+  (null? (& Mask Bits)))
+(macro (bset? Mask Bits)
+  (not (bnull? Mask Bits)))
+(context MAIN)
