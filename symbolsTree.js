@@ -135,11 +135,25 @@ var Inspector = Inspector || {};
             + propsForSym(sym));
   }
   function nameForDynsym(sym) {
-    return ("("
+    var var_sid = getDynVarFrom_sym(sym);
+    var var_sym = sid2sym(var_sid);
+    var targetPrefix = (var_sym
+                        && var_sym.type === "sym"
+                        && var_sym.val.type === "context"
+                        && var_sym.val.term);
+    var targetCtx_sym = targetPrefix && symsMap["MAIN:" + targetPrefix];
+    // use target context symbol's term info (may be chunks) as target prefix
+    targetPrefix = targetCtx_sym && stringOrChunks2span(targetCtx_sym, "term");
+    return ("" //"("
             + stringOrChunks2span(sym, "varPrefix")
             + ":"
             + stringOrChunks2span(sym, "varTerm")
-            + "):"
+            + "<br>→ "
+            + (targetPrefix
+               || ("[not a context ("
+                   + (var_sym && var_sym.val.type || "???")
+                   + ")]"))
+            + ":" //"):"
             + stringOrChunks2span(sym, "targetTerm")
             + propsForDynsym(sym));
   }
@@ -163,7 +177,9 @@ var Inspector = Inspector || {};
     return (target_sid
             ? (val
                ? infoForVal(val)
-               : "nil")
+               : "nil" + (symsMap[target_sid]
+                          ? ""
+                          : " [symbol does not exist]"))
             : "[cannot resolve " + var_sid + " to reach target symbol]");
   }
   function infoForVal(val) {
@@ -979,9 +995,15 @@ var Inspector = Inspector || {};
       updateSymbolsViewAction();
     }
   }
+  function sid2sym(sid) {
+    return sid && symsMap[sid];
+  }
+  function getDynVarFrom_sym(dsym) {
+    return (dsym.varPrefix && dsym.varTerm
+            && dsym.varPrefix + ":" + dsym.varTerm);
+  }
   function getDynVarTargetFrom_sym(dsym) {
-    var var_sid = (dsym.varPrefix && dsym.varTerm
-                   && dsym.varPrefix + ":" + dsym.varTerm);
+    var var_sid = getDynVarFrom_sym(dsym);
     var var_sym = var_sid && symsMap[var_sid];
     var target_sid = (var_sym
                       && var_sym.type === "sym"
