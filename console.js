@@ -868,6 +868,7 @@ var Inspector = Inspector || {};
               json.message,
               "Remote started as:\n  " + remoteCommand
             ]});
+          set_PID(pid);
           break;
         case "kill":
           var signal = subprops.signal;
@@ -940,6 +941,7 @@ var Inspector = Inspector || {};
             messages: messages
           });
         }
+        clear_PID();
         break;
       default:
         log_info("Event " + json.what + " -> ignored."
@@ -1205,6 +1207,13 @@ var Inspector = Inspector || {};
       ev.preventDefault();
       window.location.href = window.location.origin + "/" + urlFragment;
     });
+    $("#navigationMenu").val("navigation")
+  }
+  function set_PID(pid) {
+    $("#PID").text("" + pid);
+  }
+  function clear_PID() {
+    $("#PID").text("none");
   }
   
   // WS in remote console
@@ -1248,13 +1257,15 @@ var Inspector = Inspector || {};
       init_interact();
     }
     init_actionMenu();
-    init_navigationMenu();
+    // init_navigationMenu();
     init_websocket(function() {
       inRemoteStartup = true;
       performControl_startRemote($("#remoteArguments").val());
     });
-    init_cb_showTextBG($("#cb_showTextBG_remote_console"), $("#wrapper_remote_console"));
-    init_cb_showTextBG($("#cb_showTextBG_remote_stderr"), $("#wrapper_remote_stderr"));
+    init_cb_showTextBG($("#cb_showTextBG_remote_console"),
+                       $("#wrapper_remote_console"));
+    init_cb_showTextBG($("#cb_showTextBG_remote_stderr"),
+                       $("#wrapper_remote_stderr"));
     // may have advantages in some cases
     $(window).on('beforeunload', close_websocket);
   }
