@@ -107,11 +107,13 @@ span.is_symProps {
     padding: 0.5em;
 }
 
-/* text BG in remote windows */
+/* text BG in remote windows
+ * - transparent color for keeping selections - in a layer behind - visible
+ */
 #wrapper_remote_console.showTextBG .CodeMirror span:not(.promptSingle) {
-  background-color: #f0f0f0;
+  background-color: rgba(220,220,220,0.5);
 }
-#wrapper_remote_stderr.showTextBG .CodeMirror span:not(.promptSingle) {
-  background-color: #f0f0f0;
+#wrapper_remote_stderr.showTextBG .CodeMirror span {
+  background-color: rgba(220,220,220,0.5);
 }
 /* EOF */
