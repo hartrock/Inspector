@@ -24,7 +24,7 @@
           (write-line 2 (append "[load-module] -> " filepath
                                 " loaded."))))))
 
-(context 'dbg)
+(context 'MAIN:dbg) ; avoid creation of 'Init:dbg
 (when (not Init:minimalDone)
   (define (dbg:begin arg)
     (write-line 2 (string arg "..")))
