@@ -36,6 +36,7 @@ var Inspector = Inspector || {};
     lockConsole();
     evalErrorFlag = false;
     inEvalConsole = true;
+    show_remote_eval();
     doSend(jsonStr);
     log_info(jsonObj.type + " started");
   }
@@ -63,6 +64,7 @@ var Inspector = Inspector || {};
     evalErrorFlag = false;
     if (! inEvalIntrospectionCount) {
       lockConsole();
+      show_remote_eval();
     }
     ++inEvalIntrospectionCount;
     doSend(jsonStr);
@@ -77,6 +79,7 @@ var Inspector = Inspector || {};
     evalErrorFlag = false;
     if (! inEvalIntrospectionCount) {
       lockConsole();
+      show_remote_eval();
     }
     ++inEvalIntrospectionCount;
     doSend(jsonStr);
@@ -755,11 +758,13 @@ var Inspector = Inspector || {};
     switch (json.type) {
     case "remoteStartupError":
       inRemoteStartup = false;
+      show_remote_error();
     case "remoteEvalError":
       log_err("requestID: " + json.requestID + "\n  "
               + json.message);
       inEvalConsole = false;
       unlockConsole(true);
+      show_remote_error();
       break;
     case "evalResult":
       var rr = json.evalResult;
@@ -767,7 +772,7 @@ var Inspector = Inspector || {};
       evalFinishedFlag = (evalStatus === "finished");
       //console.log(rr.triggerType);
       switch (rr.triggerType) {
-      case "startup": case "remoteControl":
+      case "startup": case "remoteControl": // &&& check
         if (status === "OK") {
           writeRemoteResults(rr);
           if (evalFinishedFlag) {
@@ -783,6 +788,7 @@ var Inspector = Inspector || {};
           log_err("Startup of remote interpreter failed.");
           inRemoteStartup = false;
           unlockConsole(true);
+          show_remote_error();
         }
         break;
       case "remoteEvalConsole":
@@ -812,6 +818,11 @@ var Inspector = Inspector || {};
         if (unlockFlag) {
           inEvalConsole = false;
           unlockConsole();
+          if (evalErrorFlag) {
+            show_remote_error();
+          } else {
+            show_remote_idle();
+          }
         }
         break;
       case "remoteEvalIntrospection":
@@ -847,6 +858,11 @@ var Inspector = Inspector || {};
         ;
         if (! --inEvalIntrospectionCount) {
           unlockConsole();
+          if (evalErrorFlag) {
+            show_remote_error();
+          } else {
+            show_remote_idle();
+          }
         }
         break;
       default:
@@ -869,6 +885,7 @@ var Inspector = Inspector || {};
               "Remote started as:\n  " + remoteCommand
             ]});
           set_PID(pid);
+          show_remote_idle();
           break;
         case "kill":
           var signal = subprops.signal;
@@ -942,6 +959,7 @@ var Inspector = Inspector || {};
           });
         }
         clear_PID();
+        show_remote_none();
         break;
       default:
         log_info("Event " + json.what + " -> ignored."
@@ -1209,13 +1227,26 @@ var Inspector = Inspector || {};
     });
     $("#navigationMenu").val("navigation")
   }
+  
   function set_PID(pid) {
     $("#PID").text("" + pid);
   }
   function clear_PID() {
     $("#PID").text("none");
   }
-  
+  var c_remoteStatusClasses = "remote_none remote_idle remote_eval remote_error";
+  function show_remote_idle() {
+    $("#PID").removeClass(c_remoteStatusClasses);
+    $("#PID").addClass('remote_idle');
+  }
+  function show_remote_eval() {
+    $("#PID").removeClass(c_remoteStatusClasses);
+    $("#PID").addClass('remote_eval');
+  }
+  function show_remote_error() {
+    $("#PID").removeClass(c_remoteStatusClasses);
+    $("#PID").addClass('remote_error');
+  }
   // WS in remote console
   function check_cb_showTextBG(cb, wrapperCM) {
     if (cb.prop('checked')) {

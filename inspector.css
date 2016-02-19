@@ -116,4 +116,20 @@ span.is_symProps {
 #wrapper_remote_stderr.showTextBG .CodeMirror span {
   background-color: rgba(220,220,220,0.5);
 }
+
+#PID {
+    text-family: monospace;
+}
+#PID.remote_none {
+    font-style: italic;
+}
+#PID.remote_eval {
+    font-style: italic;
+    color: green;
+}
+#PID.remote_error {
+    font-style: italic;
+    font-weight: bold;
+    color: red;
+}
 /* EOF */
