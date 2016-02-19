@@ -1,28 +1,31 @@
 #!/usr/bin/env newlisp
-;; mimic .init.lsp if not loaded
+
 (context 'Init)
-(cond
- ((not Init:Init) ; guard
-  (set 'nodebug true) ; nil for more debug messages
-  ;; script dir detection
+
+(set 'nodebug true) ; nil for more debug messages
+;; script dir detection
+(when (not appdir)
   (set 'appscript "startIt.lsp"
+       'appscriptArgs (filter (fn (a) (find appscript a))
+                              (main-args))
        'appdir ; be robust against CLI args not being appscript
-       (0 (- (length appscript)) ; only leave dirpath
-          (first (filter (fn (a) (find appscript a))
-                         (main-args)))))
+       (if appscriptArgs
+           (0 (- (length appscript)) ; only leave dirpath
+              (first appscriptArgs))))
   (set 'appdir (if (null? appdir)
                    "." ; CWD
-                   (0 -1 appdir))) ; rm trailing "/"
-  ;; appdir to be used as basedir: rel modules/ and lib/
-  (set 'basedir (append appdir "/Base"))
-
-  (load (append basedir "/modules/Init.lsp"))
-  (set 'Init:Init true))
- (".init.lsp loaded"
-  (set 'appdir (append basedir "/Inspector"))))
+                   (0 -1 appdir)))) ; rm trailing "/"
+;; set basedir: rel to it are modules/ and lib/
+;; try to be compatible with preset Init:basedir not below appdir
+(when (not basedir)
+  (set 'basedir (append appdir "/Base")))
 
 
 (context MAIN)
+
+;; fat infrastructure
+(when (not Init:extendedDone)
+  (load (append Init:basedir "/modules/Init.lsp")))
 
 ;;
 ;; handle CLI arguments

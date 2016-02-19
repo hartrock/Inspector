@@ -502,5 +502,5 @@
   (symbols-in-listSym-to-JSON_listSym (unquote-listSym listSymQuoted)))
 
 
-(context MAIN)
+(set 'loadedFlag true)
 ;; EOF

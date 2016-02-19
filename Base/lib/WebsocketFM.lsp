@@ -1,7 +1,11 @@
 (load-libs 'WS 'Sys)
 
 (load-module "WS_WS.lsp") ; think: mv to ../lib/
-(load-module "Introspection.lsp")
+
+;; special: may have been loaded before without using load-module, and so
+;; without registering
+(when (not Introspection:loadedFlag)
+  (load-module "Introspection.lsp"))
 
 (load-module "UTF8.lsp") ; debugging: check for invalid UTF-8
 
