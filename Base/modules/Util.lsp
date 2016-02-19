@@ -376,6 +376,15 @@
        (def-new s (sym s dstCtx))
        "skip (no overwrite with nil vals)")))
 
+(define (h_string-to-sym ss ctx)
+  (letn ((v (parse ss ":"))
+         (p (when (= (length v) 2) (v 0)))
+         (t (v -1)))
+    (sym t (if p (context (sym p MAIN)) ctx))))
+(when (not loadedFlag)
+  ;; emacro needed to get caller (context)
+  (macro (string-to-sym Str)
+    (h_string-to-sym Str (context))))
 
-(context MAIN)
-;; EOF
+(set 'loadedFlag true) ; avoid loading emacro twice
+;;EOF
