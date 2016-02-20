@@ -7,7 +7,7 @@ Directly to [How to start](#how-to-start).
 ### News
 
 - v0.4.2
-  - symbols view: more detailed info about dynsyms
+  - symbols view: more detailed info about dynsyms ([screenshot](#remote-inspector-dynamic-symbols-dynsyms))
   - permanently show PID of remote and remote's status
   - better interrupt handling: now it works for remote startup code given by startup arguments, too.
   
