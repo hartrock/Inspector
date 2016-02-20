@@ -1232,6 +1232,10 @@ var Inspector = Inspector || {};
     $("#PID").text("none");
   }
   var c_remoteStatusClasses = "remote_none remote_idle remote_eval remote_error";
+  function show_remote_none() {
+    $("#PID").removeClass(c_remoteStatusClasses);
+    $("#PID").addClass('remote_none');
+  }
   function show_remote_idle() {
     $("#PID").removeClass(c_remoteStatusClasses);
     $("#PID").addClass('remote_idle');
