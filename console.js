@@ -769,7 +769,7 @@ var Inspector = Inspector || {};
       evalFinishedFlag = (evalStatus === "finished");
       //console.log(rr.triggerType);
       switch (rr.triggerType) {
-      case "remoteControl": // &&& check
+      case "remoteControl":
         if (status === "OK") {
           writeRemoteResults(rr);
           if (evalFinishedFlag) {
@@ -782,10 +782,14 @@ var Inspector = Inspector || {};
           }
         }
         else {
-          log_err("Startup of remote interpreter failed.");
-          inRemoteStartup = false;
+          if (inRemoteStartup) {
+            log_err("Startup of remote interpreter failed.");
+            inRemoteStartup = false;
+            show_remote_error();
+          } else {
+            log_err("Evaluation result error.");
+          }
           unlockConsole(true);
-          show_remote_error();
         }
         break;
       case "remoteEvalConsole":
