@@ -315,8 +315,10 @@
         "/usr/bin/env"
         ;; for finding modules/* by remote
         " NEWLISP_APP_basedir=" Init:basedir
+        " INSPECTOR_META_CHANNEL=" (string fm:r_meta->i) ; remote -> Inspector
         " newlisp"
         " -C" ; force prompts
+        " " Init:appdir "/remote_prompt-event.lsp" ; uses INSPECTOR_META_CHANNEL
         " " Init:moduledir "/Init.minimal.lsp"
         " " Init:moduledir "/Introspection.lsp"
         (if argumentsOrNil
@@ -325,14 +327,9 @@
   (set 'fm:pid_remote (process fm:remote_commandStr
                                fm:r<-i_out
                                fm:r_out->i fm:r_err->i))
-  (when fm:pid_remote
-    (set 'fm:remote_status c_running)
-    (let (promptEventStr (string
-                          "(prompt-event (fn (ctx) (write-line " ; ends with '\n'
-                          fm:r_meta->i ; write ..
-                          " \"prompt-event\")" ; .. to meta channel, but ..
-                          " nil))")) ; .. leave the prompt unchanged
-      (write-line fm:i_out->r promptEventStr)))) ; command -> remote
+  (when fm:pid_remote ;todo error handling
+    (set 'fm:remote_status c_running)))
+
 (constant 'c_bufSize (* 1024 64) ; 128 is too small, 64k seems to be standard
           'c_bufSize_meta 32
           'c_debuggerPrompt "s|tep n|ext c|ont q|uit > "
@@ -797,7 +794,7 @@
       (fm:advance "sendRemoteInput")))
 
 (define (handle_sendRemoteInput fm)
-  ;;(dbg:expr fm:remote_input, (string fm:remote_input))
+  ;;(dbg:expr fm:remote_input)
   (write fm:i_out->r fm:remote_input)
   (fm:advance "startTransferRemoteResults"))
 

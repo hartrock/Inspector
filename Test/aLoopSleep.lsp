@@ -1,0 +1,17 @@
+(println "aLoopSleep.lsp..")
+(define (printx x)
+  (println x))
+(define (aLoopSleep)
+  (set 's "-->")
+  (set 'end 10)
+  (for (anIx 1 end)
+       (set 'b (* 2 anIx) 'c (+ 1 anIx) 'd (* b c) 'e (* anIx anIx))
+       (set 's (dup s))
+       ;; indirect: for getting debug prompt after interrupt
+       (printx (string " anIx: " anIx))
+       (sleep 2000)))
+(println "..aLoopSleep.lsp")
+(println "Start with\n  (aLoopSleep)\nor\n  (debug (aLoopSleep))\n.")
+(println "Automatically started just now.")
+(aLoopSleep)
+;;EOF

@@ -775,10 +775,16 @@ var Inspector = Inspector || {};
           if (evalFinishedFlag) {
             console_editor.execCommand("goDocEnd");
             inRemoteStartup = false;
+            log_info("Startup of remote OK.");
+            //console.log("rr:", rr);
+            debugPromptFlag = rr.promptType === "debug";
+            interruptPromptFlag = rr.promptType === "interrupt";
+            if (hasSymbolsViewFlag
+                && ! interruptPromptFlag) {
+              performIntrospection_symbolsMap("(Util:symbols-all)",
+                                              fillSymbolsTree);
+            }
             unlockConsole();
-            hasSymbolsViewFlag
-              && performIntrospection_symbolsMap("(Util:symbols-all)",
-                                                 fillSymbolsTree);
           }
         }
         else {
