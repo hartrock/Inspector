@@ -137,8 +137,6 @@
    WebsocketFM_console:handle_interpret_text_message)
   ("interpretTextMessage_nested"
    WebsocketFM_console:handle_interpret_text_message_nested)
-  ("remoteStartupError"
-   WebsocketFM_console:handle_remoteStartupError)
   ("remoteEval"
    WebsocketFM_console:handle_remoteEval)
     ("remoteEvalError"
@@ -738,10 +736,6 @@
        'fm:or_res_status "OK")
   (messageResponse_nested fm))
 
-(define (handle_remoteStartupError fm)
-  (set 'fm:res_type "remoteStartupError"
-       'fm:res_status "error")
-  (messageResponse fm))
 (define (handle_controlErrorResponse fm)
   (set 'fm:res_type "controlResponse"
        'fm:res_status "error")

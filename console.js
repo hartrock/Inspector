@@ -756,9 +756,6 @@ var Inspector = Inspector || {};
     }
     //console.log(json);
     switch (json.type) {
-    case "remoteStartupError":
-      inRemoteStartup = false;
-      show_remote_error();
     case "remoteEvalError":
       log_err("requestID: " + json.requestID + "\n  "
               + json.message);
@@ -772,7 +769,7 @@ var Inspector = Inspector || {};
       evalFinishedFlag = (evalStatus === "finished");
       //console.log(rr.triggerType);
       switch (rr.triggerType) {
-      case "startup": case "remoteControl": // &&& check
+      case "remoteControl": // &&& check
         if (status === "OK") {
           writeRemoteResults(rr);
           if (evalFinishedFlag) {
