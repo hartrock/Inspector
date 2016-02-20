@@ -1116,7 +1116,7 @@
         (logg:error (append
                      "Reading request failed"
                      (if (net-error)
-                         (append ": " (net-error))
+                         (string ": " (net-error))
                          "")
                      "."))
         (:advance fm_main "cleanup_after_request_error"))
