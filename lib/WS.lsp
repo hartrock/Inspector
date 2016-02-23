@@ -69,10 +69,13 @@
 
    ("accept_error" "accept error")
    ("handle_request" "handle request")
-     ("get_request" handle_get-request)
-       ("receiveNparse_header" rec-n-parse-header)
+     ("get_request" handle_get_request)
+       ;;
+       ("rec_headers" handle_rec_headers)
+       ("parse_headers" handle_parse_headers)
+       ;;
        ("rec_opt_content" handle_rec_opt_content)
-         ("receive_content" rec-content)
+         ("receive_content" rec_content)
      ("get_request_error" "get request error")
      ("compute_response" "compute response")
      
@@ -270,9 +273,8 @@
 
 (context WS)
 
+(constant 'header_lengthLimit 1024)
 (constant 'content_lengthLimit (* 8 (* 1024 (* 1024)))) ; 8MB
-(constant 'do-net-peek_sleep_base 2)
-(constant 'do-net-peek_max_trials 11) ; max sleep before last 11. trial: 2^10ms
 
 (define (prepare)
   (new Tree 'MAIN:WS_Headers_request))
@@ -281,134 +283,104 @@
 (define (cleanup)
   (if WS_Headers_request (delete 'MAIN:WS_Headers_request))
   ;;(if WS_Headers_response (delete 'MAIN:WS_Headers_response))
-  (set 'data_request nil
+  (set 'buf_request nil
+       'data_request nil
        'string_response nil))
-
-(define (OLD_rec-n-parse-header , str )
-  (set 'buf_len 1024) ; may be too small
-  (println "buf_len: " buf_len)
-  (net-receive curr_conn str buf_len "\nend\n")
-  (println "str: " str)
-  (letn ((res nil)
-         (tokenized (parse (0 -1 str) "\n" 0)) ; parse without trailing \n
-         (tokens (0 -1 tokenized)) ; without end tok
-         (pairs (array (/ (length tokens) 2) 2 tokens)))
-    (sort pairs)
-    (WS_Headers_request (array-list pairs)) ; fill hash map
-    ))
-
-(define (rec-n-parse-header-mod_lisp fm)
-  (local (key val)
-    (while (and
-            (setq key (read-line conn))
-            (not (net-error))
-            (!= key "end"))
-      (setq val (read-line conn))
-      (print (format "%30s" key))
-      (println "  ->  " val)
-      (WS_Headers_request key val)
-      ))
-  (if (net-error)
-      (fm:advance "get_request_error")
-      (fm:advance "rec_opt_content")))
 
 (define (logg-key-val key val)
   (logg:info (format "%20s  ->  %s" key val)))
 
 ;; Measures to quickly timeout accepted preconnections without getting a header.
-(constant 'requestHeader_timeout (* 10 1000)) ; 10ms
-;;todo make it even more robust: read-line may wait forever for a "\n"
-(define (rec-n-parse-header-http fm)
-  (logg:info "[request...]")
-  (local (ready line key val)
-    (set 'ready (net-select conn "r" requestHeader_timeout))
-    (dbg:expr ready (net-peek conn))
-    (if (not ready)
-        (dbg:expr (net-error))
-        (set 'line (read-line conn)))
-    (if (not (nil? line))
+(constant 'requestHeader_timeout (* 10 1000) ; 10ms
+          'requestContent_timeout (* 10 requestHeader_timeout))
+;; http://stackoverflow.com/questions/5640144/c-how-to-use-select-to-see-if-a-socket-has-closed
+(define (handle_rec_headers fm)
+  (local (tooLong finished ready toBeRead readBytes readBuf)
+    (while (and (not finished)
+                (set 'ready (net-select conn "r" requestHeader_timeout))
+                (not (null? (set 'toBeRead (net-peek conn))))
+                (not (set 'tooLong (> (+ toBeRead
+                                         (length buf_request))
+                                      header_lengthLimit)))
+                (not (null? (set 'readBytes
+                                 (net-receive conn readBuf toBeRead "\r\n")))))
+      (extend buf_request readBuf)
+      (set 'finished (and (>= (length buf_request) 4)
+                          (= (-4 buf_request) "\r\n\r\n"))))
+    (if finished
         (begin
-          (set 'p (parse line " "))
-          (when (= (length p) 3)
-            (WS_Headers_request "method" (p 0))
-            (WS_Headers_request "url" (p 1))
-            (WS_Headers_request "protocol" (p 2))
-            (logg-key-val "method" (p 0))
-            (logg-key-val "url" (p 1))
-            (logg-key-val "protocol" (p 2)))
-          (while (and
-                  (set 'ready (net-select conn "r" requestHeader_timeout))
-                  (set 'line (read-line conn))
-                  (!= line ""))
-            ;;(dbg:expr line)
-            (set 'p (parse line ": ")) ;&&&
-            (if (= (length p) 2)
-                (set 'key (lower-case (p 0))
-                     'val (p 1)))
-            (logg-key-val key val)
-            (WS_Headers_request key val)
-            )))
-    (logg:info "[...request]")
-    (if (or (nil? line) (not ready))
+          (fm:advance "parse_headers"))
         (begin
-          ;; http://stackoverflow.com/questions/5640144/c-how-to-use-select-to-see-if-a-socket-has-closed
-          (if (and ready (= (net-peek conn) 0)) ; see link above and ..
-              (logg:warn "Connection closed by other end.") ; ..interpreter code
-              (and (not ready) (not (net-error)))
-              (logg:warn "Connection timed-out."))
-          (fm:advance "get_request_error")) ; net-error logged there
-        (fm:advance "rec_opt_content"))))
+          (cond
+           ((net-error)) ; see below ..
+           ((not ready)
+            (logg:warn "Connection timed-out."))
+           ((null? toBeRead) ; see link above and ..
+            ((if (null? buf_request)
+                 logg:warn
+                 logg:error) ; not just preconn: transmission already started
+             "Connection closed by other end.")) ;.. interpreter code
+           (tooLong
+            (logg:error "Request header too long."))
+           ((null? readBytes)
+            (logg:error "Unexpected net-receive error.")))
+          (fm:advance "get_request_error"))))) ; .. net-error logged there
 
-;;todo reimplement with select
-(define (do-net-peek conn , giveup_flag available nothing_count)
-  (do-while (and (not giveup_flag) (= available 0))
-            (setq available (net-peek conn))
-            (if (= available 0)
-                (begin
-                  (++ nothing_count)
-                  (logg:warn "(= (net-peek conn) 0)")
-                  (if (< nothing_count do-net-peek_max_trials)
-                      (let (time_ms (pow do-net-peek_sleep_base
-                                         nothing_count))
-                        (logg:warn "-> sleep " time_ms "ms")
-                        (sleep time_ms))
-                      (setq giveup_flag true)))))
-  (if (> available 0)
-      available)) ; else: ret nil
+(define (handle_parse_headers fm
+                              , lines p OK)
+  (set 'lines (filter (fn (line) (not (null? line)))
+                      (parse buf_request "\r\n"))
+       'OK (not (null? lines)))
+  (when OK
+    (set 'p (parse (first lines " "))
+         'OK (= (length p) 3))
+    (when (not OK)
+      (logg:error "Malformed first significant header line (method, url, protocol).")))
+  (when OK
+    (WS_Headers_request "method" (p 0))
+    (WS_Headers_request "url" (p 1))
+    (WS_Headers_request "protocol" (p 2))
+    (logg-key-val "method" (p 0))
+    (logg-key-val "url" (p 1))
+    (logg-key-val "protocol" (p 2))
+    (dolist (line (rest lines) (not OK))
+            (set 'p (parse line ": "))
+            (cond
+             ((= (length p) 2)
+              (set 'key (lower-case (p 0))
+                   'val (p 1))
+              (WS_Headers_request key val)
+              (logg-key-val key val))
+             ((not? p)) ; ignore empty line
+             (true
+              (set 'OK nil)
+              (logg:error "Malformed header line.")))))
+  (fm:advance (if OK
+                  "rec_opt_content"
+                  "get_request_error")))
 
-(define (rec-content-mod_lisp fm
-                              , len available buf num_rec)
-  (set 'len fm:len)
-  (if
-   (> len content_lengthLimit)
-   (begin
-     (logg:error "Content length " len " greater than length limit "
-                 content_lengthLimit "."))
-   (fm:advance "get_request_error"))
-  (begin
-    (setq data_request "")
-    (let (gotten 0)
-      (while (and (< gotten len)
-                  (setq available (do-net-peek conn)))
-        (setq num_rec (net-receive conn buf buf_len))
-        (++ gotten num_rec)
-        (extend data_request buf))
-      (cond
-       ((< gotten len)
-        (logg:error "content data missing; gotten: "
-                    gotten ": wrong content-length " len "?")
-        (fm:advance "get_request_error"))
-       ((> gotten len)
-        (logg:error "More request data than expected; gotten " gotten
-                    ", expected: " len " -> truncated.")
-        (setq data_request (slice data_request 0 len))
-        (fm:advance "get_request_error"))
-       ("default"
-        (fm:advance "compute_response"))))))
+;;
+(define (do-net-peek conn currLen maxLen timeout
+                     , ready toBeRead tooLong)
+  (if (and (set 'ready (net-select conn "r" timeout))
+           (not (null? (set 'toBeRead (net-peek conn))))
+           (not (set 'tooLong (> (+ toBeRead
+                                    (length data_request))
+                                 content_lengthLimit))))
+      toBeRead
+      (begin
+        (cond
+         ((net-error)
+          (logg:error "(net-error): " (net-error)))
+         ((null? toBeRead)
+          (logg:error "Connection closed by other end."))
+         (tooLong
+          (logg:error "Request content too long.")))
+        nil))) ; ret nil in case of error
 
 ; HTTP/1.1 100 Continue
-(define (rec-content-http fm
-                          , len available buf num_rec)
+(define (rec_content fm
+                     , len available buf num_rec)
   (set 'len fm:len)
   (if
    (> len content_lengthLimit)
@@ -417,66 +389,50 @@
                  content_lengthLimit ".")
      (fm:advance "get_request_error"))
    (begin
-     (if (= (WS_Headers_request "expect") "100-continue")
-         (net-send conn (append (WS_Headers_request "protocol")
-                                " 100 Continue\r\n\r\n")))
-     (setq data_request "")
+     (when (= (WS_Headers_request "expect") "100-continue")
+       ;;todo err handling
+       (net-send conn (append (WS_Headers_request "protocol")
+                              " 100 Continue\r\n\r\n")))
+     (set 'data_request "")
      (let (gotten 0)
        (while (and (< gotten len)
-                   (setq available (do-net-peek conn)))
-         (setq num_rec (net-receive conn buf buf_len))
+                   (set 'available (do-net-peek conn
+                                                (length data_request)
+                                                content_lengthLimit
+                                                requestContent_timeout)
+                        'num_rec (net-receive conn buf available))
+                   (not (null? num_rec)))
          (++ gotten num_rec)
-         ;;(dbg:expr num_rec gotten len)
          (extend data_request buf))
-       (cond
-        ((< gotten len)
-         (logg:error "content data missing; gotten: "
-                     gotten ": wrong content-length " len "?")
-         (fm:advance "get_request_error"))
-        ((> gotten len)
-         (logg:error "More request data than expected; gotten " gotten
-                     ", expected: " len " -> truncated.")
-         (setq data_request (slice data_request 0 len))
-         (fm:advance "get_request_error"))
-        ("default"
-         (fm:advance "compute_response")))))))
+       (if (and (= gotten len)
+                (not (net-error)))
+           (fm:advance "compute_response")
+           (begin
+             ;; (net-error) shown in get_request_error
+             (cond
+              ((< gotten len)
+               (logg:error "Content data missing; gotten: "
+                           gotten ": wrong content-length " len "?"))
+              ((> gotten len)
+               (logg:error "More request data than expected; gotten: " gotten
+                           ", expected: " len ".")))
+             (fm:advance "get_request_error")))))))
 
-(define (WS:init)
-  (cond
-   ((= server_protocol "http")
-    (set 'rec-n-parse-header rec-n-parse-header-http
-         'rec-content rec-content-http)
-    (set 'create-header create-header-http
-         'create-status-header create-status-header-http
-         'create-end-header create-end-header-http)
-    )
-   ((= server_protocol "mod_lisp")
-    (set 'rec-n-parse-header rec-n-parse-header-mod_lisp
-         'rec-content rec-content-mod_lisp)
-    (set 'create-header create-header-mod_lisp
-         'create-status-header create-status-header-mod_lisp
-         'create-end-header create-end-header-mod_lisp)
-    )
-   ("default"
-    (logg:fatal "unknown server protocol " server_protocol)
-    (exit 1)))
+(define (init)
   ;; prefix_resource may be set from outside
   (constant 'URLprefix (or prefix_resource
                            "/") ; sep alone
             'URLprefix_len (length URLprefix)))
 
-
 (define (handle_rec_opt_content fm)
-  ;;(dbg:expr fm)
   (set 'fm:len (int (WS_Headers_request "content-length")))
-  ;;(dbg:expr len)
   (if (> fm:len 0)
       (fm:advance "receive_content")
       (fm:advance "compute_response")))
 
-(define (handle_get-request fm) ;failure result buf_len)
+(define (handle_get_request fm) ;failure result buf_len)
   (set 'buf_len (* 1024 1024))
-  (fm:advance "receiveNparse_header")) ; (rec-n-parse-header conn)
+  (fm:advance "rec_headers"))
 
 (define (URL-to-localpath-and-params url
                                      , localURL splitURL localpath
@@ -649,21 +605,12 @@
            (:MIMEtype (WS_T_Resource rname)))
       (MIMEtype-for-suffix (rsuffix rname))))
 
-;; Headers according mod_lisp protocol:
-;; this is (similar to HTTP, but not identical.
-(define (create-status-header-mod_lisp status)
-  (create-header-mod_lisp "Status" (string status)))
-(define (create-header-mod_lisp key val)
-  (append key "\r\n" val "\r\n"))
-(define (create-end-header-mod_lisp)
-  "end\r\n")
-
 ;; HTTP headers
-(define (create-status-header-http status)
+(define (create-status-header status)
   (append "HTTP/1.1 " (http-status-message status) "\r\n"))
-(define (create-header-http key val)
+(define (create-header key val)
   (append key ": " val "\r\n"))
-(define (create-end-header-http)
+(define (create-end-header)
   "\r\n")
 
 (define (create-headers keyVal_pairs)
