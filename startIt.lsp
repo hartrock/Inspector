@@ -33,8 +33,13 @@
 (load-module "getopts_patched_Ted.lsp")
 
 (longopt "port" ; shortopt -p interferes with newlisp opt!
-         (set 'WS:server_port (int getopts:arg)) "<port>"
-         "e.g. 80 oder 8080 (default: 8080")
+         (set 'WS:server_port (int getopts:arg))
+         "<port>"
+[text]e.g. 8081 (default: 8080)
+Notes:
+- port 80 does not work with standard user rights;
+- by giving different port arguments multiple instances can be run in parallel.
+[/text])
 
 (shortlongopt "h" "help" (getopts:usage useStr) nil "print this help message")
 
