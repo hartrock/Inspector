@@ -29,7 +29,7 @@
   (if val (OK) (FAIL)))
 (define (Tst:stats (what (Tst:name)))
   (msg)
-  (msg2 (string "[" what "] OK: " OK_count ", FAILURE: " FAIL_count "."))
+  (msg2 (format "%-40s OK: %d, FAILURE: %d." (append "[" what "]") OK_count FAIL_count))
   (msg))
 
 (Tst:init)
