@@ -1,2 +1,0 @@
-# ~/Inspector
-git subtree add -P Base --squash ~/newLISP_Base HEAD
