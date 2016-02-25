@@ -80,24 +80,17 @@
  's_lastEvaluation 9 ;;'s_reached
 )
 
-(define (tree-sym ix nameStr)
-  (sym (string (context) "_" ix "_" nameStr) MAIN))
-
 ;; each call creates a new flow machine FOOP, referenced by a ref context
 ;; default
 (define (FM nameStrOrNil)
-  (letn ( ;; generic
-         (ref_context (new-ref-context))
-         ;; specific
-         (foop (list (context)   ; 0: FOOP Class
-                     ref_context ; 1: FOOP reference context
-                     (or nameStrOrNil (string ref_context))
-                     (new Tree (tree-sym foopCount "nodes")) ; 2 ; foopCount ..
-                     (new Tree (tree-sym foopCount "stats")) ; 3 ; .. from FR
-                     nil nil nil nil nil)))
-    (set ;; set ref context default to FOOP
-     (sym (string ref_context) ref_context)
-     foop)
+  (let (ref_context (new-FOOPReference)) ; generic; 0, 1
+    ;; specific
+    (extend ref_context
+            (list
+             (or nameStrOrNil (string ref_context)) ; 2
+             (new-tree "nodes") ; 3
+             (new-tree "stats") ; 4
+             nil nil nil nil nil))
     (set ; forwards of ref context calls to FOOP Class
      (sym "advance" ref_context)
      (lambda (next)
@@ -117,16 +110,11 @@
      (sym "nodes" ref_context)          (lambda () (:nodes (context))))
     ref_context))
 
-(define (delete-all-instances)
-  (let (ix foopCount) ; local ix taking and not changing val of outer
-    (while (> ix 0)
-      (let ((nodesSym (tree-sym ix "nodes"))
-            (statsSym  (tree-sym ix "stats")))
-        (delete nodesSym) (delete nodesSym)
-        (delete statsSym)  (delete statsSym))
-      (-- ix)))
-  ;; counts foopCount down to zero: so do this *after* using foopCount ..
-  (delete-all-refs)) ; .. for cleaning FM specific things above
+;; override default for deleting 'sub' contexts
+(define (delete-ref)
+  (delete-context (self s_nodes))
+  (delete-context (self s_stats))
+  (delete-FOOPReference)) ; default
 
 ;; (add-node "foo")
 ;; (add-node "foo" "this is foo")
