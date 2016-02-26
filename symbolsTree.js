@@ -1053,11 +1053,7 @@ var Inspector = Inspector || {};
     changedSyms.forEach(function(sid, ix) {
       symsMap[sid] = new_changed[sid];
     });
-    addedSyms.sort(cmp_symInMAIN_before);
-    addedSyms.forEach(function(sid, ix) {
-      addContextNodesFor(sid);
-    });
-    
+
     var changedToNotContextSyms = changedSyms.filter(function(sid) {
       return (pred_context_inMAIN_map(sid, old_changed)
               && ! pred_context_inMAIN(sid));
@@ -1077,7 +1073,12 @@ var Inspector = Inspector || {};
         createContextFolder(allSyms, sid);
       });
     }
-    
+
+    addedSyms.sort(cmp_symInMAIN_before);
+    addedSyms.forEach(function(sid, ix) {
+      addContextNodesFor(sid);
+    });
+
     // sort changed list folder syms to front, to avoid needless updating of
     // their old childs [todo: think]
     if (changedListFolderSymsWithChilds.length) {
